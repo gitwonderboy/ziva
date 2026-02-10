@@ -28,6 +28,14 @@ const AuthScreen = ({ onLogin }) => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row font-sans bg-white">
+      {/* MOBILE BRANDING BAR */}
+      <div className="flex md:hidden items-center gap-2 px-6 py-4 bg-slate-900">
+        <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
+          <ShieldCheck className="text-white w-4 h-4" />
+        </div>
+        <span className="text-lg font-bold tracking-tight text-white">Ziva Platform</span>
+      </div>
+
       {/* LEFT PANEL: Branding & Marketing */}
       <div className="hidden md:flex flex-1 bg-slate-900 items-center justify-center p-12 text-white relative overflow-hidden">
         {/* Decorative Gradient Overlay */}
@@ -121,7 +129,7 @@ const AuthScreen = ({ onLogin }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-2 group active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10 flex items-center justify-center gap-2 group active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -135,7 +143,7 @@ const AuthScreen = ({ onLogin }) => {
           </form>
 
           <p className="mt-10 text-center text-sm font-bold text-slate-400">
-            New to Sync Inbox? <button className="text-indigo-600 hover:underline">Start free trial</button>
+            New to Ziva? <button className="text-indigo-600 hover:underline">Start free trial</button>
           </p>
         </div>
       </div>

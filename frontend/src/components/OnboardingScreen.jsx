@@ -11,9 +11,9 @@ const OnboardingScreen = ({ user, onComplete, showBackButton = true }) => {
 
   return (
     <div className="flex-1 overflow-y-auto bg-white min-h-screen font-sans">
-      <div className="max-w-4xl mx-auto py-12 px-8">
+      <div className="max-w-4xl mx-auto py-8 px-4 md:py-12 md:px-8">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-indigo-50 rounded-[2.5rem] mb-6 border border-indigo-100 shadow-sm">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-indigo-50 rounded-3xl mb-6 border border-indigo-100 shadow-sm">
             <RefreshCcw className="w-10 h-10 text-indigo-600" />
           </div>
           <h1 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">Sync Your Inbox</h1>
@@ -26,7 +26,7 @@ const OnboardingScreen = ({ user, onComplete, showBackButton = true }) => {
           {/* Microsoft Outlook Card */}
           <button
             onClick={handleMicrosoftConnect}
-            className="group bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-2xl hover:border-indigo-400 hover:-translate-y-1 transition-all text-left"
+            className="group bg-white p-10 rounded-3xl border border-slate-200 shadow-sm hover:shadow-2xl hover:border-indigo-400 hover:-translate-y-1 transition-all text-left"
           >
             <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
               <img
@@ -47,8 +47,11 @@ const OnboardingScreen = ({ user, onComplete, showBackButton = true }) => {
           {/* Google Gmail Card */}
           <button
             onClick={() => alert('Gmail integration coming soon!')}
-            className="group bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-sm hover:shadow-2xl hover:border-indigo-400 hover:-translate-y-1 transition-all text-left"
+            className="group bg-white p-10 rounded-3xl border border-slate-200 shadow-sm hover:shadow-2xl hover:border-indigo-400 hover:-translate-y-1 transition-all text-left relative overflow-hidden"
           >
+            <div className="absolute top-4 right-4 bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full">
+              Coming Soon
+            </div>
             <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
               <img
                 src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
@@ -64,21 +67,21 @@ const OnboardingScreen = ({ user, onComplete, showBackButton = true }) => {
               Link Account <ChevronRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
           </button>
-
-          {showBackButton && (
-            <div className="col-span-full flex justify-center mt-8">
-              <button
-                onClick={onComplete}
-                className="flex items-center gap-2 text-sm font-black text-slate-400 hover:text-indigo-600 transition-all hover:scale-105 active:scale-95 group uppercase tracking-widest"
-              >
-                Already connected? Take me to the dashboard
-              </button>
-            </div>
-          )}
         </div>
 
+        {showBackButton && (
+          <div className="flex justify-center mb-16">
+            <button
+              onClick={onComplete}
+              className="flex items-center gap-2 text-sm font-black text-slate-400 hover:text-indigo-600 transition-all hover:scale-105 active:scale-95 group uppercase tracking-widest"
+            >
+              Already connected? Take me to the dashboard
+            </button>
+          </div>
+        )}
+
         {/* Security Trust Section */}
-        <div className="bg-slate-50 rounded-[3rem] p-12 border border-slate-200">
+        <div className="bg-slate-50 rounded-2xl md:rounded-3xl p-8 md:p-12 border border-slate-200">
           <div className="flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="text-center md:text-left">
               <h3 className="text-xl font-black text-slate-900 mb-2 flex items-center justify-center md:justify-start gap-2">

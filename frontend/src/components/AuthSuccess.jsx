@@ -32,7 +32,7 @@ const AuthSuccess = () => {
 
   return (
     <div className="h-screen w-full bg-slate-900 flex items-center justify-center p-6 font-sans">
-      <div className="max-w-md w-full bg-white rounded-[3rem] p-12 shadow-[0_0_50px_rgba(79,70,229,0.3)] text-center space-y-8 animate-in zoom-in duration-500 relative overflow-hidden">
+      <div className="max-w-md w-full bg-white rounded-3xl p-12 shadow-[0_0_50px_rgba(79,70,229,0.3)] text-center space-y-8 animate-fade-in-scale relative overflow-hidden">
         <Sparkles className="absolute top-10 right-10 text-indigo-100 w-12 h-12" />
         <div className="relative mx-auto w-24 h-24">
           <div className="absolute inset-0 bg-emerald-100 rounded-full animate-ping opacity-25"></div>
