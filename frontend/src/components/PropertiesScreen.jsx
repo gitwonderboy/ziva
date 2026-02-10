@@ -17,7 +17,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { searchProperties, upsertProperty } from '../services/api.js';
-import { CHARGE_FIELDS, groupByProperty, getActiveCharges } from '../utils/propertyHelpers.js';
+import { CHARGE_FIELDS, MUNICIPALITY_OPTIONS, groupByProperty, getActiveCharges, parseProviderName } from '../utils/propertyHelpers.js';
 
 const EMPTY_FORM = {
   account_no: '',
@@ -51,7 +51,6 @@ const ACCOUNT_FIELDS = [
   { key: 'bp_number', label: 'BP Number' },
   { key: 'sap_acc_no', label: 'SAP Acc No' },
   { key: 'tenant_name', label: 'Tenant Name' },
-  { key: 'municipality_raw', label: 'Municipality' },
   { key: 'company', label: 'Company' },
 ];
 
@@ -166,6 +165,13 @@ const PropertiesScreen = ({ user }) => {
     for (const key of Object.keys(EMPTY_FORM)) {
       if (property[key] !== undefined && property[key] !== null) {
         populated[key] = String(property[key]);
+      }
+    }
+    // Map raw municipality value to clean dropdown option
+    if (populated.municipality_raw) {
+      const clean = parseProviderName(populated.municipality_raw);
+      if (MUNICIPALITY_OPTIONS.includes(clean)) {
+        populated.municipality_raw = clean;
       }
     }
     setFormData(populated);
@@ -401,7 +407,7 @@ const PropertiesScreen = ({ user }) => {
                                   )}
                                 </p>
                                 <p className="text-[11px] font-bold text-slate-400 truncate">
-                                  {property.municipality_raw || '\u2014'}
+                                  {parseProviderName(property.municipality_raw)}
                                 </p>
                               </div>
                             </div>
@@ -581,7 +587,7 @@ const PropertiesScreen = ({ user }) => {
                           <span className="text-sm font-black text-slate-900">{acc.account_no}</span>
                           <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
                         </div>
-                        <p className="text-[11px] font-bold text-slate-400 mb-2">{acc.municipality_raw || '\u2014'}</p>
+                        <p className="text-[11px] font-bold text-slate-400 mb-2">{parseProviderName(acc.municipality_raw)}</p>
                         {charges.length > 0 && (
                           <div className="flex flex-wrap gap-1">
                             {charges.map((c) => (
@@ -632,6 +638,21 @@ const PropertiesScreen = ({ user }) => {
                       readOnly={isEditing && field.key === 'account_no'}
                     />
                   ))}
+                  <div className="col-span-2">
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                      Municipality / Provider
+                    </label>
+                    <select
+                      value={formData.municipality_raw}
+                      onChange={(e) => handleFieldChange('municipality_raw', e.target.value)}
+                      className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold outline-none transition-colors bg-white text-slate-900 focus:border-indigo-500"
+                    >
+                      <option value="">Select a provider...</option>
+                      {MUNICIPALITY_OPTIONS.map((name) => (
+                        <option key={name} value={name}>{name}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 

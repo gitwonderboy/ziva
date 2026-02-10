@@ -19,9 +19,42 @@ export const CHARGE_FIELDS = [
   { key: 'general', label: 'General' },
 ];
 
+export const MUNICIPALITY_OPTIONS = [
+  'AURUM LUXURY RESIDENCES BODY CORPORATE',
+  'CECIL NURSE',
+  'CENTLEC',
+  'CITY OF CAPE TOWN',
+  'CITY OF JOBURG',
+  'CITY OF TSHWANE',
+  'CITY OF uMHLATHUZE',
+  'DRAKENSTEIN',
+  'EKURHULENI',
+  'EMALAHLENI',
+  'ESKOM',
+  'ETHEKWINI',
+  'GOVAN MBEKI MUNICIPALITY',
+  'LINBRO',
+  'MAFADI',
+  'MANGAUANG',
+  'NELSON MANDELA BAY',
+  'PHOENIX IND. PARK LOT-OWNERS ASSO.',
+  'RAND PORT INDUSTRIAL',
+  'RAY NKONYENI MUNICIPALITY',
+  'RIVERHORSE VALLEY BUSINESS ESTATE',
+  'S & J INDUSTRIAL',
+  'SAN LAMEER',
+  'THE GLEN HIGH SCHOOL',
+  'TRAFALGAR',
+];
+
 export function parseProviderName(municipalityRaw) {
   if (!municipalityRaw || municipalityRaw === 'N/A') return 'Unknown';
-  return municipalityRaw.replace(/\s*-\s*\d.*$/, '').trim();
+  // Strip " - ACCOUNT_NUMBER" or " - CODE" suffix
+  let name = municipalityRaw.replace(/\s*-\s*[\dA-Z]*\d[\dA-Z/]*(?:\s*\(.*\))?$/i, '').trim();
+  // Match to a known provider if possible
+  const upper = name.toUpperCase();
+  const match = MUNICIPALITY_OPTIONS.find((m) => upper.startsWith(m.toUpperCase()));
+  return match || name || 'Unknown';
 }
 
 const ESKOM_PATTERN = /eskom/i;

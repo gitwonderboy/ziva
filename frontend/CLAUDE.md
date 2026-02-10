@@ -35,6 +35,12 @@ Route guards in `App.jsx` (`AppContent` component) use localStorage flags (`sync
   - `GET /partner/stats?email=` — dashboard data (documents, stats, monthly breakdowns)
   - `GET /admin/scan?email=` — trigger inbox sync
   - `GET /login/microsoft?email=` — OAuth redirect
+  - POST -
+    `https://a4sklso1b4.execute-api.af-south-1.amazonaws.com/prod/property`
+    - Add data to database
+  - GET -
+    `https://a4sklso1b4.execute-api.af-south-1.amazonaws.com/prod/properties/search`
+    - Pull data from database
 - API responses are transformed in `fetchDashboardData()` into normalized document objects and chart data
 
 ### Styling
