@@ -23,10 +23,14 @@ import {
   Menu,
   Inbox,
   Building2,
+  Landmark,
+  Users,
 } from 'lucide-react';
 import { fetchDashboardData, scanInbox } from '../services/api.js';
 import OnboardingScreen from './OnboardingScreen.jsx';
 import PropertiesScreen from './PropertiesScreen.jsx';
+import ProvidersScreen from './ProvidersScreen.jsx';
+import TenantsScreen from './TenantsScreen.jsx';
 
 const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) => {
   const queryClient = useQueryClient();
@@ -122,6 +126,18 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
             label="Properties"
           />
           <SidebarButton
+            active={activeTab === 'providers'}
+            onClick={() => setActiveTab('providers')}
+            icon={<Landmark />}
+            label="Providers"
+          />
+          <SidebarButton
+            active={activeTab === 'tenants'}
+            onClick={() => setActiveTab('tenants')}
+            icon={<Users />}
+            label="Tenants"
+          />
+          <SidebarButton
             active={activeTab === 'settings'}
             onClick={() => setActiveTab('settings')}
             icon={<Settings />}
@@ -176,6 +192,8 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
               <SidebarButton active={activeTab === 'processed'} onClick={() => handleMobileTabChange('processed')} icon={<ShieldCheck />} label="Approved" />
               <SidebarButton active={activeTab === 'review'} onClick={() => handleMobileTabChange('review')} icon={<AlertCircle />} label="Flagged" count={reviewQueue.length} />
               <SidebarButton active={activeTab === 'properties'} onClick={() => handleMobileTabChange('properties')} icon={<Building2 />} label="Properties" />
+              <SidebarButton active={activeTab === 'providers'} onClick={() => handleMobileTabChange('providers')} icon={<Landmark />} label="Providers" />
+              <SidebarButton active={activeTab === 'tenants'} onClick={() => handleMobileTabChange('tenants')} icon={<Users />} label="Tenants" />
               <SidebarButton active={activeTab === 'settings'} onClick={() => handleMobileTabChange('settings')} icon={<Settings />} label="Settings" />
             </nav>
 
@@ -223,6 +241,10 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
           <OnboardingScreen user={user} onComplete={() => setActiveTab('activity')} showBackButton={true} />
         ) : activeTab === 'properties' ? (
           <PropertiesScreen user={user} />
+        ) : activeTab === 'providers' ? (
+          <ProvidersScreen user={user} />
+        ) : activeTab === 'tenants' ? (
+          <TenantsScreen user={user} />
         ) : (
           <>
             <header className="h-16 bg-white border-b border-slate-200 hidden lg:flex items-center justify-between px-8 shrink-0 z-10">
