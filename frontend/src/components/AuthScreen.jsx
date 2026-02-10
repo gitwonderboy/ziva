@@ -19,7 +19,7 @@ const AuthScreen = ({ onLogin }) => {
       onLogin({
         id: 'user-' + Math.random().toString(36).substr(2, 9),
         name: email.split('@')[0], // Grabs the name from the email
-        email: email
+        email: email,
       });
       setLoading(false);
       navigate('/onboarding');
@@ -38,7 +38,7 @@ const AuthScreen = ({ onLogin }) => {
             <div className="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center shadow-lg border border-white/20">
               <ShieldCheck className="text-white w-6 h-6" />
             </div>
-            <span className="text-2xl font-bold tracking-tight text-white">Sync Inbox</span>
+            <span className="text-2xl font-bold tracking-tight text-white">Ziva Platform</span>
           </div>
 
           <h1 className="text-4xl font-black mb-6 leading-tight">
@@ -47,7 +47,8 @@ const AuthScreen = ({ onLogin }) => {
           </h1>
 
           <p className="text-indigo-100 text-lg leading-relaxed mb-10 font-medium opacity-90">
-            Automate your property revenue verification. We extract, match, and highlight discrepancies so you only spend time where it matters.
+            Automate your property revenue verification. We extract, match, and highlight discrepancies so you only
+            spend time where it matters.
           </p>
 
           <div className="grid grid-cols-2 gap-6">
@@ -77,9 +78,7 @@ const AuthScreen = ({ onLogin }) => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">
-                Email address
-              </label>
+              <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Email address</label>
               <input
                 type="email"
                 required
@@ -92,9 +91,7 @@ const AuthScreen = ({ onLogin }) => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">
-                Password
-              </label>
+              <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
               <input
                 type="password"
                 required
