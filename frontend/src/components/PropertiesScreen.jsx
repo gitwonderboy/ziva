@@ -17,11 +17,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { searchProperties, upsertProperty } from '../services/api.js';
-import {
-  CHARGE_FIELDS,
-  groupByProperty,
-  getActiveCharges,
-} from '../utils/propertyHelpers.js';
+import { CHARGE_FIELDS, groupByProperty, getActiveCharges } from '../utils/propertyHelpers.js';
 
 const EMPTY_FORM = {
   account_no: '',
@@ -61,18 +57,14 @@ const ACCOUNT_FIELDS = [
 
 const FormField = ({ label, value, onChange, readOnly }) => (
   <div>
-    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
-      {label}
-    </label>
+    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">{label}</label>
     <input
       type="text"
       value={value}
       onChange={onChange}
       readOnly={readOnly}
       className={`w-full border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold outline-none transition-colors ${
-        readOnly
-          ? 'bg-slate-100 text-slate-500 cursor-not-allowed'
-          : 'bg-white text-slate-900 focus:border-indigo-500'
+        readOnly ? 'bg-slate-100 text-slate-500 cursor-not-allowed' : 'bg-white text-slate-900 focus:border-indigo-500'
       }`}
     />
   </div>
@@ -83,9 +75,7 @@ const ChargeToggle = ({ label, active, onClick }) => (
     type="button"
     onClick={onClick}
     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
-      active
-        ? 'bg-indigo-600 text-white'
-        : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+      active ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
     }`}
   >
     {label}
@@ -95,9 +85,7 @@ const ChargeToggle = ({ label, active, onClick }) => (
 const KPICard = ({ label, value, icon, color = 'bg-blue-50' }) => (
   <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
     <div className="flex justify-between items-center mb-4">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
-        {icon}
-      </div>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>{icon}</div>
       <div className="text-2xl font-black text-slate-900">{value}</div>
     </div>
     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</div>
@@ -115,7 +103,11 @@ const PropertiesScreen = ({ user }) => {
   const [viewMode, setViewMode] = useState('records');
   const [selectedProperty, setSelectedProperty] = useState(null);
 
-  const { data: properties, isLoading, isError } = useQuery({
+  const {
+    data: properties,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['properties', 'search', searchQuery, user?.email],
     queryFn: () => searchProperties(searchQuery ?? '', user?.email),
     enabled: !!user?.email && searchQuery !== null,
@@ -201,22 +193,23 @@ const PropertiesScreen = ({ user }) => {
       {/* DESKTOP HEADER */}
       <header className="h-16 bg-white border-b border-slate-200 hidden lg:flex items-center justify-between px-8 shrink-0 z-10">
         <form onSubmit={handleSearch} className="relative max-w-sm w-full flex gap-2">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search properties..."
-              className="w-full bg-slate-50 border-slate-200 border rounded-xl py-2 pl-12 pr-4 text-sm font-bold outline-none focus:border-indigo-500 transition-colors"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-            />
-          </div>
           <button
             type="submit"
             className="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-black hover:bg-slate-800 transition-colors"
           >
             Search
           </button>
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search properties"
+              className="w-full bg-slate-50 border-slate-200 border rounded-xl py-2 pl-12 pr-4 text-sm font-bold outline-none focus:border-indigo-500 transition-colors"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+          </div>
+
           <button
             type="button"
             onClick={browseAll}
@@ -373,10 +366,18 @@ const PropertiesScreen = ({ user }) => {
                   <table className="w-full text-left">
                     <thead>
                       <tr className="border-b border-slate-100">
-                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Document</th>
-                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Account No</th>
-                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Company</th>
-                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">BP Number</th>
+                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                          Document
+                        </th>
+                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                          Account No
+                        </th>
+                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">
+                          Company
+                        </th>
+                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">
+                          BP Number
+                        </th>
                         <th className="px-4 md:px-8 py-3 w-10"></th>
                       </tr>
                     </thead>
@@ -394,7 +395,9 @@ const PropertiesScreen = ({ user }) => {
                                 <p className="text-sm font-black text-slate-900 truncate">
                                   {property.tenant_name || 'Unnamed'}
                                   {(property.tenant_name || '').toUpperCase() === 'VACANT' && (
-                                    <span className="ml-2 inline-flex px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-100 text-amber-700 uppercase">Vacant</span>
+                                    <span className="ml-2 inline-flex px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-100 text-amber-700 uppercase">
+                                      Vacant
+                                    </span>
                                   )}
                                 </p>
                                 <p className="text-[11px] font-bold text-slate-400 truncate">
@@ -460,8 +463,12 @@ const PropertiesScreen = ({ user }) => {
                         >
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex items-center gap-3">
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${prop.is_vacant ? 'bg-amber-50' : 'bg-indigo-50'}`}>
-                                <Building2 className={`w-5 h-5 ${prop.is_vacant ? 'text-amber-600' : 'text-indigo-600'}`} />
+                              <div
+                                className={`w-10 h-10 rounded-xl flex items-center justify-center ${prop.is_vacant ? 'bg-amber-50' : 'bg-indigo-50'}`}
+                              >
+                                <Building2
+                                  className={`w-5 h-5 ${prop.is_vacant ? 'text-amber-600' : 'text-indigo-600'}`}
+                                />
                               </div>
                               <div>
                                 <p className="text-sm font-black text-slate-900">BP {prop.bp_number || 'N/A'}</p>
@@ -474,21 +481,32 @@ const PropertiesScreen = ({ user }) => {
                           <div className="flex items-center gap-2 mb-3">
                             <span className="text-xs font-bold text-slate-600">{prop.tenant_name || 'Unknown'}</span>
                             {prop.is_vacant && (
-                              <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-100 text-amber-700 uppercase">Vacant</span>
+                              <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-100 text-amber-700 uppercase">
+                                Vacant
+                              </span>
                             )}
                           </div>
 
                           <div className="flex items-center justify-between text-[11px] text-slate-400 font-bold mb-3">
-                            <span>{prop.accounts.length} utility {prop.accounts.length === 1 ? 'account' : 'accounts'}</span>
+                            <span>
+                              {prop.accounts.length} utility {prop.accounts.length === 1 ? 'account' : 'accounts'}
+                            </span>
                           </div>
 
                           {uniqueCharges.length > 0 && (
                             <div className="flex flex-wrap gap-1">
                               {uniqueCharges.slice(0, 4).map((c) => (
-                                <span key={c} className="px-2 py-0.5 bg-slate-100 rounded text-[9px] font-bold text-slate-500">{c}</span>
+                                <span
+                                  key={c}
+                                  className="px-2 py-0.5 bg-slate-100 rounded text-[9px] font-bold text-slate-500"
+                                >
+                                  {c}
+                                </span>
                               ))}
                               {uniqueCharges.length > 4 && (
-                                <span className="px-2 py-0.5 bg-slate-100 rounded text-[9px] font-bold text-slate-400">+{uniqueCharges.length - 4}</span>
+                                <span className="px-2 py-0.5 bg-slate-100 rounded text-[9px] font-bold text-slate-400">
+                                  +{uniqueCharges.length - 4}
+                                </span>
                               )}
                             </div>
                           )}
@@ -506,7 +524,10 @@ const PropertiesScreen = ({ user }) => {
       {/* PROPERTY DETAIL DRAWER (Portfolio click) */}
       {selectedProperty && (
         <div className="fixed inset-0 z-50 flex justify-end">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedProperty(null)} />
+          <div
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            onClick={() => setSelectedProperty(null)}
+          />
           <div className="relative w-full max-w-lg bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
             <div className="p-6 border-b flex items-center justify-between shrink-0">
               <div>
@@ -523,13 +544,19 @@ const PropertiesScreen = ({ user }) => {
 
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${selectedProperty.is_vacant ? 'bg-amber-50' : 'bg-indigo-50'}`}>
-                  <Building2 className={`w-6 h-6 ${selectedProperty.is_vacant ? 'text-amber-600' : 'text-indigo-600'}`} />
+                <div
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center ${selectedProperty.is_vacant ? 'bg-amber-50' : 'bg-indigo-50'}`}
+                >
+                  <Building2
+                    className={`w-6 h-6 ${selectedProperty.is_vacant ? 'text-amber-600' : 'text-indigo-600'}`}
+                  />
                 </div>
                 <div>
                   <p className="font-black text-slate-900">{selectedProperty.tenant_name || 'Unknown'}</p>
                   {selectedProperty.is_vacant && (
-                    <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-100 text-amber-700 uppercase">Vacant</span>
+                    <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-100 text-amber-700 uppercase">
+                      Vacant
+                    </span>
                   )}
                 </div>
               </div>
@@ -545,7 +572,10 @@ const PropertiesScreen = ({ user }) => {
                       <div
                         key={acc.account_no || i}
                         className="bg-slate-50 rounded-xl p-4 border border-slate-100 cursor-pointer hover:border-indigo-200 transition-colors"
-                        onClick={(e) => { e.stopPropagation(); openEdit(acc); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEdit(acc);
+                        }}
                       >
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-black text-slate-900">{acc.account_no}</span>
@@ -555,7 +585,12 @@ const PropertiesScreen = ({ user }) => {
                         {charges.length > 0 && (
                           <div className="flex flex-wrap gap-1">
                             {charges.map((c) => (
-                              <span key={c} className="px-2 py-0.5 bg-white rounded text-[9px] font-bold text-slate-500 border border-slate-100">{c}</span>
+                              <span
+                                key={c}
+                                className="px-2 py-0.5 bg-white rounded text-[9px] font-bold text-slate-500 border border-slate-100"
+                              >
+                                {c}
+                              </span>
                             ))}
                           </div>
                         )}
@@ -575,13 +610,8 @@ const PropertiesScreen = ({ user }) => {
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={closeDrawer} />
           <div className="relative w-full max-w-lg bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
             <div className="p-6 border-b flex items-center justify-between shrink-0">
-              <h2 className="font-black text-slate-900 text-lg">
-                {isEditing ? 'Edit Property' : 'Add Property'}
-              </h2>
-              <button
-                onClick={closeDrawer}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
-              >
+              <h2 className="font-black text-slate-900 text-lg">{isEditing ? 'Edit Property' : 'Add Property'}</h2>
+              <button onClick={closeDrawer} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                 <X size={20} className="text-slate-400" />
               </button>
             </div>

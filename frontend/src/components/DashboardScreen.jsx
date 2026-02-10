@@ -40,7 +40,20 @@ import ProvidersScreen from './ProvidersScreen.jsx';
 import TenantsScreen from './TenantsScreen.jsx';
 
 /* ── helpers ── */
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 const currentPeriod = `${MONTHS[new Date().getMonth()]} ${new Date().getFullYear()}`;
 
 function parseAmount(v) {
@@ -69,9 +82,15 @@ const ProgressRing = ({ percent, size = 120, stroke = 10 }) => {
     <svg width={size} height={size} className="transform -rotate-90">
       <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#e2e8f0" strokeWidth={stroke} />
       <circle
-        cx={size / 2} cy={size / 2} r={radius} fill="none"
-        stroke="#4f46e5" strokeWidth={stroke} strokeLinecap="round"
-        strokeDasharray={circumference} strokeDashoffset={offset}
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="#4f46e5"
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
         className="transition-all duration-700"
       />
     </svg>
@@ -143,26 +162,37 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
     const invoiceDelivered = Math.max(0, invoiceSent - Math.round(invoiceSent * 0.02));
 
     return {
-      received: total, extracted, validated, allocated,
-      totalCost, tenantRecovery, landlordPortion, completionPct,
-      journalGenerated, journalPosted, journalPending,
-      invoiceGenerated, invoiceSent, invoiceDelivered,
+      received: total,
+      extracted,
+      validated,
+      allocated,
+      totalCost,
+      tenantRecovery,
+      landlordPortion,
+      completionPct,
+      journalGenerated,
+      journalPosted,
+      journalPending,
+      invoiceGenerated,
+      invoiceSent,
+      invoiceDelivered,
     };
   }, [documents, processedQueue]);
 
   const recentBills = useMemo(
     () => [...documents].sort((a, b) => new Date(b.receivedAt) - new Date(a.receivedAt)).slice(0, 5),
-    [documents]
+    [documents],
   );
 
   const openExceptions = useMemo(
-    () => reviewQueue.slice(0, 4).map((doc, i) => ({
-      ...doc,
-      exId: `EX-${String(reviewQueue.length - i).padStart(4, '0')}`,
-      exType: getExceptionType(doc),
-      daysAgo: daysSince(doc.receivedAt),
-    })),
-    [reviewQueue]
+    () =>
+      reviewQueue.slice(0, 4).map((doc, i) => ({
+        ...doc,
+        exId: `EX-${String(reviewQueue.length - i).padStart(4, '0')}`,
+        exType: getExceptionType(doc),
+        daysAgo: daysSince(doc.receivedAt),
+      })),
+    [reviewQueue],
   );
 
   const tableData = useMemo(() => {
@@ -201,21 +231,55 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
         </div>
 
         <nav className="flex-1 px-4 space-y-1 mt-4">
-          <SidebarButton active={activeTab === 'activity'} onClick={() => setActiveTab('activity')} icon={<BarChart3 />} label="Dashboard" />
-          <SidebarButton active={activeTab === 'documents'} onClick={() => setActiveTab('documents')} icon={<FileText />} label="Documents" />
-          <SidebarButton active={activeTab === 'processed'} onClick={() => setActiveTab('processed')} icon={<ShieldCheck />} label="Approved" />
-          <SidebarButton active={activeTab === 'review'} onClick={() => setActiveTab('review')} icon={<AlertCircle />} label="Flagged" count={reviewQueue.length} />
-          <SidebarButton active={activeTab === 'properties'} onClick={() => setActiveTab('properties')} icon={<Building2 />} label="Properties" />
-          <SidebarButton active={activeTab === 'providers'} onClick={() => setActiveTab('providers')} icon={<Landmark />} label="Providers" />
-          <SidebarButton active={activeTab === 'tenants'} onClick={() => setActiveTab('tenants')} icon={<Users />} label="Tenants" />
-          <SidebarButton active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} icon={<Settings />} label="Settings" />
+          <SidebarButton
+            active={activeTab === 'activity'}
+            onClick={() => setActiveTab('activity')}
+            icon={<BarChart3 />}
+            label="Dashboard"
+          />
+          <SidebarButton
+            active={activeTab === 'documents'}
+            onClick={() => setActiveTab('documents')}
+            icon={<FileText />}
+            label="Documents"
+          />
+          <SidebarButton
+            active={activeTab === 'properties'}
+            onClick={() => setActiveTab('properties')}
+            icon={<Building2 />}
+            label="Properties"
+          />
+          <SidebarButton
+            active={activeTab === 'providers'}
+            onClick={() => setActiveTab('providers')}
+            icon={<Landmark />}
+            label="Providers"
+          />
+          <SidebarButton
+            active={activeTab === 'tenants'}
+            onClick={() => setActiveTab('tenants')}
+            icon={<Users />}
+            label="Tenants"
+          />
+          <SidebarButton
+            active={activeTab === 'settings'}
+            onClick={() => setActiveTab('settings')}
+            icon={<Settings />}
+            label="Settings"
+          />
         </nav>
 
         <div className="p-4 border-t border-slate-800 space-y-1">
-          <button onClick={onReset} className="w-full flex items-center gap-3 px-4 py-2 rounded-xl text-slate-500 hover:text-white transition-all font-bold text-[10px] uppercase tracking-widest hover:bg-white/5">
+          <button
+            onClick={onReset}
+            className="w-full flex items-center gap-3 px-4 py-2 rounded-xl text-slate-500 hover:text-white transition-all font-bold text-[10px] uppercase tracking-widest hover:bg-white/5"
+          >
             <RotateCcw size={14} /> Reset System
           </button>
-          <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-sm">
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-sm"
+          >
             <LogOut size={18} /> Sign Out
           </button>
         </div>
@@ -241,25 +305,75 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
                 </div>
                 <span className="text-white font-black text-xl tracking-tight">Ziva Platform</span>
               </div>
-              <button onClick={() => setMobileMenuOpen(false)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2 hover:bg-white/5 rounded-xl transition-colors"
+              >
                 <X size={20} className="text-slate-400" />
               </button>
             </div>
             <nav className="flex-1 px-4 space-y-1 mt-2">
-              <SidebarButton active={activeTab === 'activity'} onClick={() => handleMobileTabChange('activity')} icon={<BarChart3 />} label="Dashboard" />
-              <SidebarButton active={activeTab === 'documents'} onClick={() => handleMobileTabChange('documents')} icon={<FileText />} label="Documents" />
-              <SidebarButton active={activeTab === 'processed'} onClick={() => handleMobileTabChange('processed')} icon={<ShieldCheck />} label="Approved" />
-              <SidebarButton active={activeTab === 'review'} onClick={() => handleMobileTabChange('review')} icon={<AlertCircle />} label="Flagged" count={reviewQueue.length} />
-              <SidebarButton active={activeTab === 'properties'} onClick={() => handleMobileTabChange('properties')} icon={<Building2 />} label="Properties" />
-              <SidebarButton active={activeTab === 'providers'} onClick={() => handleMobileTabChange('providers')} icon={<Landmark />} label="Providers" />
-              <SidebarButton active={activeTab === 'tenants'} onClick={() => handleMobileTabChange('tenants')} icon={<Users />} label="Tenants" />
-              <SidebarButton active={activeTab === 'settings'} onClick={() => handleMobileTabChange('settings')} icon={<Settings />} label="Settings" />
+              <SidebarButton
+                active={activeTab === 'activity'}
+                onClick={() => handleMobileTabChange('activity')}
+                icon={<BarChart3 />}
+                label="Dashboard"
+              />
+              <SidebarButton
+                active={activeTab === 'documents'}
+                onClick={() => handleMobileTabChange('documents')}
+                icon={<FileText />}
+                label="Documents"
+              />
+              <SidebarButton
+                active={activeTab === 'processed'}
+                onClick={() => handleMobileTabChange('processed')}
+                icon={<ShieldCheck />}
+                label="Approved"
+              />
+              <SidebarButton
+                active={activeTab === 'review'}
+                onClick={() => handleMobileTabChange('review')}
+                icon={<AlertCircle />}
+                label="Flagged"
+                count={reviewQueue.length}
+              />
+              <SidebarButton
+                active={activeTab === 'properties'}
+                onClick={() => handleMobileTabChange('properties')}
+                icon={<Building2 />}
+                label="Properties"
+              />
+              <SidebarButton
+                active={activeTab === 'providers'}
+                onClick={() => handleMobileTabChange('providers')}
+                icon={<Landmark />}
+                label="Providers"
+              />
+              <SidebarButton
+                active={activeTab === 'tenants'}
+                onClick={() => handleMobileTabChange('tenants')}
+                icon={<Users />}
+                label="Tenants"
+              />
+              <SidebarButton
+                active={activeTab === 'settings'}
+                onClick={() => handleMobileTabChange('settings')}
+                icon={<Settings />}
+                label="Settings"
+              />
             </nav>
             <div className="p-4 border-t border-slate-800 space-y-1">
-              <button onClick={onReset} className="w-full flex items-center gap-3 px-4 py-2 rounded-xl text-slate-500 hover:text-white transition-all font-bold text-[10px] uppercase tracking-widest hover:bg-white/5">
+              <button
+                onClick={onReset}
+                className="w-full flex items-center gap-3 px-4 py-2 rounded-xl text-slate-500 hover:text-white transition-all font-bold text-[10px] uppercase tracking-widest hover:bg-white/5"
+              >
                 <RotateCcw size={14} /> Reset System
               </button>
-              <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-sm">
+              <button
+                onClick={onLogout}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-sm"
+              >
                 <LogOut size={18} /> Sign Out
               </button>
             </div>
@@ -272,7 +386,10 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
         {/* MOBILE TOP BAR */}
         <div className="flex lg:hidden items-center justify-between px-4 py-3 bg-slate-900 shrink-0">
           <div className="flex items-center gap-3">
-            <button onClick={() => setMobileMenuOpen(true)} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="p-2 hover:bg-white/5 rounded-xl transition-colors"
+            >
               <Menu size={20} className="text-white" />
             </button>
             <div className="flex items-center gap-2">
@@ -307,7 +424,9 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
             <header className="h-16 bg-white border-b border-slate-200 hidden lg:flex items-center justify-between px-8 shrink-0 z-10">
               <div>
                 <h1 className="text-lg font-black text-slate-900 leading-none">Operations Dashboard</h1>
-                <p className="text-[11px] font-bold text-slate-400 mt-0.5">{user?.email} | {currentPeriod}</p>
+                <p className="text-[11px] font-bold text-slate-400 mt-0.5">
+                  {user?.email} | {currentPeriod}
+                </p>
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-xl">
@@ -324,31 +443,65 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
             </header>
 
             <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
-
               {/* ── ROW 1: Processing Pipeline + Period Summary ── */}
               <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-
                 {/* PROCESSING PIPELINE */}
                 <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Processing Pipeline</h2>
-                    <button onClick={() => setActiveTab('documents')} className="text-xs font-bold text-indigo-600 flex items-center gap-1 hover:text-indigo-700">
+                    <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Processing Pipeline
+                    </h2>
+                    <button
+                      onClick={() => setActiveTab('documents')}
+                      className="text-xs font-bold text-indigo-600 flex items-center gap-1 hover:text-indigo-700"
+                    >
                       View All <ChevronRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                     {[
-                      { label: 'Received', value: ops.received, color: 'bg-blue-50 border-blue-200', text: 'text-blue-700', bar: 'bg-blue-500', pct: 100 },
-                      { label: 'Extracted', value: ops.extracted, color: 'bg-indigo-50 border-indigo-200', text: 'text-indigo-700', bar: 'bg-indigo-500', pct: ops.received ? (ops.extracted / ops.received) * 100 : 0 },
-                      { label: 'Validated', value: ops.validated, color: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700', bar: 'bg-emerald-500', pct: ops.received ? (ops.validated / ops.received) * 100 : 0 },
-                      { label: 'Allocated', value: ops.allocated, color: 'bg-amber-50 border-amber-200', text: 'text-amber-700', bar: 'bg-amber-500', pct: ops.received ? (ops.allocated / ops.received) * 100 : 0 },
+                      {
+                        label: 'Received',
+                        value: ops.received,
+                        color: 'bg-blue-50 border-blue-200',
+                        text: 'text-blue-700',
+                        bar: 'bg-blue-500',
+                        pct: 100,
+                      },
+                      {
+                        label: 'Extracted',
+                        value: ops.extracted,
+                        color: 'bg-indigo-50 border-indigo-200',
+                        text: 'text-indigo-700',
+                        bar: 'bg-indigo-500',
+                        pct: ops.received ? (ops.extracted / ops.received) * 100 : 0,
+                      },
+                      {
+                        label: 'Validated',
+                        value: ops.validated,
+                        color: 'bg-emerald-50 border-emerald-200',
+                        text: 'text-emerald-700',
+                        bar: 'bg-emerald-500',
+                        pct: ops.received ? (ops.validated / ops.received) * 100 : 0,
+                      },
+                      {
+                        label: 'Allocated',
+                        value: ops.allocated,
+                        color: 'bg-amber-50 border-amber-200',
+                        text: 'text-amber-700',
+                        bar: 'bg-amber-500',
+                        pct: ops.received ? (ops.allocated / ops.received) * 100 : 0,
+                      },
                     ].map((stage, i) => (
                       <div key={stage.label} className="flex items-center gap-2 md:gap-3">
                         <div className={`flex-1 rounded-xl border p-4 ${stage.color}`}>
                           <div className={`text-2xl font-black ${stage.text} text-center`}>{stage.value}</div>
                           <div className="text-[10px] font-bold text-slate-500 text-center mt-1">{stage.label}</div>
                           <div className="mt-3 h-1.5 bg-white/60 rounded-full overflow-hidden">
-                            <div className={`h-full rounded-full ${stage.bar} transition-all duration-700`} style={{ width: `${stage.pct}%` }} />
+                            <div
+                              className={`h-full rounded-full ${stage.bar} transition-all duration-700`}
+                              style={{ width: `${stage.pct}%` }}
+                            />
                           </div>
                         </div>
                         {i < 3 && <ArrowRight className="w-4 h-4 text-slate-300 hidden md:block shrink-0" />}
@@ -359,7 +512,9 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
 
                 {/* PERIOD SUMMARY */}
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                  <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Period Summary</h2>
+                  <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">
+                    Period Summary
+                  </h2>
                   <div className="flex flex-col items-center mb-6">
                     <div className="relative">
                       <ProgressRing percent={ops.completionPct} size={110} stroke={10} />
@@ -368,7 +523,9 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
                       </div>
                     </div>
                     <p className="text-sm font-black text-slate-900 mt-3">Overall Completion</p>
-                    <p className="text-[11px] font-bold text-slate-400">{ops.validated} of {ops.received} bills</p>
+                    <p className="text-[11px] font-bold text-slate-400">
+                      {ops.validated} of {ops.received} bills
+                    </p>
                   </div>
                   <div className="space-y-3 border-t border-slate-100 pt-4">
                     <div className="flex items-center justify-between">
@@ -389,12 +546,16 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
 
               {/* ── ROW 2: Recent Utility Bills + Open Exceptions ── */}
               <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-
                 {/* RECENT UTILITY BILLS */}
                 <div className="xl:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                   <div className="px-6 py-5 flex items-center justify-between border-b border-slate-100">
-                    <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Recent Utility Bills</h2>
-                    <button onClick={() => setActiveTab('documents')} className="text-xs font-bold text-indigo-600 flex items-center gap-1 hover:text-indigo-700">
+                    <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Recent Utility Bills
+                    </h2>
+                    <button
+                      onClick={() => setActiveTab('documents')}
+                      className="text-xs font-bold text-indigo-600 flex items-center gap-1 hover:text-indigo-700"
+                    >
                       View All <ChevronRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -402,20 +563,33 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
                     <table className="w-full text-left">
                       <thead>
                         <tr className="border-b border-slate-100">
-                          <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Bill ID</th>
-                          <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Property</th>
-                          <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden md:table-cell">Utility</th>
-                          <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Amount</th>
-                          <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                          <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Bill ID
+                          </th>
+                          <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Property
+                          </th>
+                          <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden md:table-cell">
+                            Utility
+                          </th>
+                          <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Amount
+                          </th>
+                          <th className="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Status
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50">
                         {recentBills.map((doc, i) => {
                           const billId = `B-${new Date(doc.receivedAt).getFullYear()}-${String(documents.length - i).padStart(4, '0')}`;
-                          const utilityType = doc.fileName?.toLowerCase().includes('elec') ? 'Electricity'
-                            : doc.fileName?.toLowerCase().includes('water') ? 'Water'
-                            : doc.fileName?.toLowerCase().includes('rate') ? 'Rates'
-                            : 'Municipal';
+                          const utilityType = doc.fileName?.toLowerCase().includes('elec')
+                            ? 'Electricity'
+                            : doc.fileName?.toLowerCase().includes('water')
+                              ? 'Water'
+                              : doc.fileName?.toLowerCase().includes('rate')
+                                ? 'Rates'
+                                : 'Municipal';
                           return (
                             <tr
                               key={doc.id}
@@ -424,11 +598,19 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
                             >
                               <td className="px-6 py-4 text-sm font-bold text-indigo-600">{billId}</td>
                               <td className="px-6 py-4">
-                                <p className="text-sm font-bold text-slate-900 truncate max-w-[180px]">{doc.fileName?.replace(/\.[^.]+$/, '') || 'Unknown'}</p>
-                                <p className="text-[10px] font-bold text-slate-400">{doc.tenant?.split('@')[0] || '\u2014'}</p>
+                                <p className="text-sm font-bold text-slate-900 truncate max-w-[180px]">
+                                  {doc.fileName?.replace(/\.[^.]+$/, '') || 'Unknown'}
+                                </p>
+                                <p className="text-[10px] font-bold text-slate-400">
+                                  {doc.tenant?.split('@')[0] || '\u2014'}
+                                </p>
                               </td>
-                              <td className="px-6 py-4 text-sm font-bold text-slate-500 hidden md:table-cell">{utilityType}</td>
-                              <td className="px-6 py-4 text-sm font-black text-slate-900">R {parseAmount(doc.amount).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}</td>
+                              <td className="px-6 py-4 text-sm font-bold text-slate-500 hidden md:table-cell">
+                                {utilityType}
+                              </td>
+                              <td className="px-6 py-4 text-sm font-black text-slate-900">
+                                R {parseAmount(doc.amount).toLocaleString('en-ZA', { minimumFractionDigits: 2 })}
+                              </td>
                               <td className="px-6 py-4">
                                 <BillStatusBadge status={doc.status} />
                               </td>
@@ -450,12 +632,19 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
                 <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                   <div className="px-6 py-5 flex items-center justify-between border-b border-slate-100">
                     <div className="flex items-center gap-2">
-                      <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Open Exceptions</h2>
+                      <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Open Exceptions
+                      </h2>
                       {reviewQueue.length > 0 && (
-                        <span className="text-[10px] font-black bg-red-100 text-red-700 px-2 py-0.5 rounded-full">{reviewQueue.length}</span>
+                        <span className="text-[10px] font-black bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
+                          {reviewQueue.length}
+                        </span>
                       )}
                     </div>
-                    <button onClick={() => setActiveTab('review')} className="text-xs font-bold text-red-500 flex items-center gap-1 hover:text-red-600">
+                    <button
+                      onClick={() => setActiveTab('review')}
+                      className="text-xs font-bold text-red-500 flex items-center gap-1 hover:text-red-600"
+                    >
                       View All <ChevronRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -470,14 +659,22 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
                           <div className="flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-red-400"></span>
                             <span className="text-xs font-black text-slate-900">{ex.exId}</span>
-                            <span className={`px-2 py-0.5 rounded text-[9px] font-black ${EXCEPTION_COLORS[ex.exType]}`}>{ex.exType}</span>
+                            <span
+                              className={`px-2 py-0.5 rounded text-[9px] font-black ${EXCEPTION_COLORS[ex.exType]}`}
+                            >
+                              {ex.exType}
+                            </span>
                           </div>
                           <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
                             <Clock className="w-3 h-3" /> {ex.daysAgo} {ex.daysAgo === 1 ? 'day' : 'days'}
                           </span>
                         </div>
-                        <p className="text-sm font-bold text-slate-700 truncate">{ex.fileName?.replace(/\.[^.]+$/, '') || 'Unknown issue'}</p>
-                        <p className="text-[11px] font-bold text-slate-400 truncate">{ex.tenant?.split('@')[0] || '\u2014'}</p>
+                        <p className="text-sm font-bold text-slate-700 truncate">
+                          {ex.fileName?.replace(/\.[^.]+$/, '') || 'Unknown issue'}
+                        </p>
+                        <p className="text-[11px] font-bold text-slate-400 truncate">
+                          {ex.tenant?.split('@')[0] || '\u2014'}
+                        </p>
                       </div>
                     ))}
                     {openExceptions.length === 0 && (
@@ -492,7 +689,6 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
 
               {/* ── ROW 3: Journal Status + Tenant Invoices + Quick Actions ── */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
                 {/* JOURNAL STATUS */}
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
                   <div className="flex items-center justify-between mb-5">
@@ -620,18 +816,41 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
             <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 md:space-y-8">
               <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-4 md:px-8 py-5 border-b border-slate-100 flex items-center gap-4 md:gap-8 bg-slate-50/30 overflow-x-auto">
-                  <TabButton active={activeTab === 'documents'} label="Documents" count={documents.length} onClick={() => setActiveTab('documents')} />
-                  <TabButton active={activeTab === 'processed'} label="Approved" count={processedQueue.length} onClick={() => setActiveTab('processed')} />
-                  <TabButton active={activeTab === 'review'} label="Flagged" count={reviewQueue.length} onClick={() => setActiveTab('review')} />
+                  <TabButton
+                    active={activeTab === 'documents'}
+                    label="Documents"
+                    count={documents.length}
+                    onClick={() => setActiveTab('documents')}
+                  />
+                  <TabButton
+                    active={activeTab === 'processed'}
+                    label="Approved"
+                    count={processedQueue.length}
+                    onClick={() => setActiveTab('processed')}
+                  />
+                  <TabButton
+                    active={activeTab === 'review'}
+                    label="Flagged"
+                    count={reviewQueue.length}
+                    onClick={() => setActiveTab('review')}
+                  />
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
                     <thead>
                       <tr className="border-b border-slate-100">
-                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Document</th>
-                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">Date</th>
-                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Amount</th>
+                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                          Document
+                        </th>
+                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                          Status
+                        </th>
+                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hidden sm:table-cell">
+                          Date
+                        </th>
+                        <th className="px-4 md:px-8 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                          Amount
+                        </th>
                         <th className="px-4 md:px-8 py-3 w-10"></th>
                       </tr>
                     </thead>
@@ -644,7 +863,9 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
                         >
                           <td className="px-4 md:px-8 py-4 md:py-6">
                             <div className="flex items-center gap-3 md:gap-4">
-                              <FileText className={`w-5 h-5 shrink-0 ${doc.status === 'SUCCESS' ? 'text-emerald-500' : 'text-amber-500'}`} />
+                              <FileText
+                                className={`w-5 h-5 shrink-0 ${doc.status === 'SUCCESS' ? 'text-emerald-500' : 'text-amber-500'}`}
+                              />
                               <div className="min-w-0 max-w-[240px]">
                                 <p className="text-sm font-black text-slate-900 truncate">{doc.fileName}</p>
                                 <p className="text-[11px] font-bold text-slate-400 truncate">{doc.tenant}</p>
@@ -657,7 +878,9 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
                           <td className="px-4 md:px-8 py-4 md:py-6 text-[11px] font-bold text-slate-500 hidden sm:table-cell">
                             {new Date(doc.receivedAt).toLocaleDateString()}
                           </td>
-                          <td className="px-4 md:px-8 py-4 md:py-6 font-black text-slate-900 text-sm">R {doc.amount}</td>
+                          <td className="px-4 md:px-8 py-4 md:py-6 font-black text-slate-900 text-sm">
+                            R {doc.amount}
+                          </td>
                           <td className="px-4 md:px-8 py-4 md:py-6 text-right">
                             <ExternalLink className="w-4 h-4 text-slate-300 opacity-0 group-hover:opacity-100 transition-all" />
                           </td>
@@ -687,13 +910,18 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
             <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
               <div className="p-6 border-b flex items-center justify-between">
                 <h2 className="font-black text-slate-900 text-lg">Document Details</h2>
-                <button onClick={() => setSelectedDoc(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                <button
+                  onClick={() => setSelectedDoc(null)}
+                  className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                >
                   <X size={20} className="text-slate-400" />
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 md:space-y-8">
                 <div className="flex items-center gap-4">
-                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${selectedDoc.status === 'SUCCESS' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                  <div
+                    className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${selectedDoc.status === 'SUCCESS' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}
+                  >
                     <FileText size={28} />
                   </div>
                   <div className="min-w-0">
@@ -703,12 +931,18 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <DetailBox icon={<User />} label="Tenant" value={selectedDoc.tenant} />
-                  <DetailBox icon={<Calendar />} label="Received" value={new Date(selectedDoc.receivedAt).toLocaleDateString()} />
+                  <DetailBox
+                    icon={<Calendar />}
+                    label="Received"
+                    value={new Date(selectedDoc.receivedAt).toLocaleDateString()}
+                  />
                   <DetailBox icon={<HandCoins />} label="Amount" value={`R ${selectedDoc.amount}`} />
                   <DetailBox icon={<Download />} label="File Size" value="2.4 MB" />
                 </div>
                 <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">AI Extraction Insight</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">
+                    AI Extraction Insight
+                  </p>
                   <p className="text-sm font-semibold text-slate-600 leading-relaxed italic">
                     {selectedDoc.status === 'SUCCESS'
                       ? 'The AI successfully matched this document to your existing records with 98% confidence.'
@@ -717,9 +951,13 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
                 </div>
               </div>
               <div className="p-6 border-t bg-slate-50/50 flex gap-3">
-                <button className="flex-1 bg-slate-900 text-white py-3 rounded-xl font-black text-sm hover:bg-slate-800 transition-colors">Download PDF</button>
+                <button className="flex-1 bg-slate-900 text-white py-3 rounded-xl font-black text-sm hover:bg-slate-800 transition-colors">
+                  Download PDF
+                </button>
                 {selectedDoc.status === 'FAILED' && (
-                  <button className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-black text-sm hover:bg-indigo-700 transition-colors">Validate Entry</button>
+                  <button className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-black text-sm hover:bg-indigo-700 transition-colors">
+                    Validate Entry
+                  </button>
                 )}
               </div>
             </div>
@@ -753,7 +991,9 @@ const SidebarButton = ({ active, icon, label, count, onClick }) => (
       {React.cloneElement(icon, { size: 18 })} <span className="font-bold text-sm">{label}</span>
     </div>
     {count > 0 && (
-      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${active ? 'bg-white text-indigo-600' : 'bg-amber-500 text-white'}`}>
+      <span
+        className={`text-[10px] font-black px-2 py-0.5 rounded-full ${active ? 'bg-white text-indigo-600' : 'bg-amber-500 text-white'}`}
+      >
         {count}
       </span>
     )}
@@ -761,7 +1001,9 @@ const SidebarButton = ({ active, icon, label, count, onClick }) => (
 );
 
 const StatusBadge = ({ status }) => (
-  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${status === 'SUCCESS' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+  <span
+    className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${status === 'SUCCESS' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}
+  >
     {status === 'SUCCESS' ? 'Processed' : 'Flagged'}
   </span>
 );
@@ -776,7 +1018,9 @@ const BillStatusBadge = ({ status }) => {
     FAILED: 'Exception',
   };
   return (
-    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black ${styles[status] || 'bg-slate-100 text-slate-600'}`}>
+    <span
+      className={`px-2.5 py-1 rounded-lg text-[10px] font-black ${styles[status] || 'bg-slate-100 text-slate-600'}`}
+    >
       {labels[status] || status}
     </span>
   );
