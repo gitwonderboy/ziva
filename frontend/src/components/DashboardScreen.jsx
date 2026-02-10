@@ -22,9 +22,11 @@ import {
   ArrowDownUp,
   Menu,
   Inbox,
+  Building2,
 } from 'lucide-react';
 import { fetchDashboardData, scanInbox } from '../services/api.js';
 import OnboardingScreen from './OnboardingScreen.jsx';
+import PropertiesScreen from './PropertiesScreen.jsx';
 
 const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) => {
   const queryClient = useQueryClient();
@@ -114,6 +116,12 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
             count={reviewQueue.length}
           />
           <SidebarButton
+            active={activeTab === 'properties'}
+            onClick={() => setActiveTab('properties')}
+            icon={<Building2 />}
+            label="Properties"
+          />
+          <SidebarButton
             active={activeTab === 'settings'}
             onClick={() => setActiveTab('settings')}
             icon={<Settings />}
@@ -167,6 +175,7 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
               <SidebarButton active={activeTab === 'documents'} onClick={() => handleMobileTabChange('documents')} icon={<FileText />} label="Documents" />
               <SidebarButton active={activeTab === 'processed'} onClick={() => handleMobileTabChange('processed')} icon={<ShieldCheck />} label="Approved" />
               <SidebarButton active={activeTab === 'review'} onClick={() => handleMobileTabChange('review')} icon={<AlertCircle />} label="Flagged" count={reviewQueue.length} />
+              <SidebarButton active={activeTab === 'properties'} onClick={() => handleMobileTabChange('properties')} icon={<Building2 />} label="Properties" />
               <SidebarButton active={activeTab === 'settings'} onClick={() => handleMobileTabChange('settings')} icon={<Settings />} label="Settings" />
             </nav>
 
@@ -212,6 +221,8 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
 
         {activeTab === 'settings' ? (
           <OnboardingScreen user={user} onComplete={() => setActiveTab('activity')} showBackButton={true} />
+        ) : activeTab === 'properties' ? (
+          <PropertiesScreen user={user} />
         ) : (
           <>
             <header className="h-16 bg-white border-b border-slate-200 hidden lg:flex items-center justify-between px-8 shrink-0 z-10">

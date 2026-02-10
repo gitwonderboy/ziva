@@ -36,6 +36,22 @@ export const scanInbox = async (userEmail) => {
   return response.json();
 };
 
+export const searchProperties = async (query, userEmail) => {
+  const response = await fetch(`${BASE_URL}/properties/search?q=${encodeURIComponent(query)}&email=${encodeURIComponent(userEmail)}`);
+  if (!response.ok) throw new Error('Failed to search properties');
+  return response.json();
+};
+
+export const upsertProperty = async (propertyData) => {
+  const response = await fetch(`${BASE_URL}/property`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(propertyData),
+  });
+  if (!response.ok) throw new Error('Failed to save property');
+  return response.json();
+};
+
 const processMonthlyStats = (records) => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const counts = {};
