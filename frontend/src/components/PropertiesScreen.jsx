@@ -52,10 +52,10 @@ const PropertiesScreen = ({ user }) => {
   const filtered = useMemo(() => {
     const q = searchInput.trim().toLowerCase();
     if (!q) return resultList;
-    return resultList.filter(
-      (p) =>
-        (p.bpNumber && p.bpNumber.toLowerCase().includes(q)) ||
-        (p.name && p.name.toLowerCase().includes(q))
+    return resultList.filter((p) =>
+      [p.bpNumber, p.name, p.company, p.physicalAddress]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(q))
     );
   }, [resultList, searchInput]);
 

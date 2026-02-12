@@ -52,8 +52,10 @@ const TenantsScreen = ({ user }) => {
   const filtered = useMemo(() => {
     const q = searchInput.trim().toLowerCase();
     if (!q) return resultList;
-    return resultList.filter(
-      (t) => t.name && t.name.toLowerCase().includes(q)
+    return resultList.filter((t) =>
+      [t.name, t.tradingName, t.contactEmail, t.registrationNumber]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(q))
     );
   }, [resultList, searchInput]);
 

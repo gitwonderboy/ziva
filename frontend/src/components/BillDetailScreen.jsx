@@ -15,6 +15,7 @@ import {
   Gauge,
   FileText,
   Flag,
+  Users,
 } from 'lucide-react';
 import {
   useBill,
@@ -23,8 +24,10 @@ import {
   useUtilityProvider,
   useUpdateBill,
   useDeleteBill,
+  useAllocationsByBill,
 } from '../firebase';
 import ExceptionModal from './ExceptionModal.jsx';
+import AllocationModal from './AllocationModal.jsx';
 
 /* ── Status helpers ── */
 
@@ -122,14 +125,18 @@ const BillDetailScreen = ({ user }) => {
 
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [exceptionModalOpen, setExceptionModalOpen] = useState(false);
+  const [allocationModalOpen, setAllocationModalOpen] = useState(false);
 
   const { data: bill, isLoading, isError } = useBill(id);
   const { data: property } = useProperty(bill?.propertyId);
   const { data: utilityAccount } = useUtilityAccount(bill?.utilityAccountId);
   const { data: provider } = useUtilityProvider(bill?.providerId);
+  const { data: allocations } = useAllocationsByBill(id);
 
   const updateMutation = useUpdateBill();
   const deleteMutation = useDeleteBill();
+
+  const allocationList = allocations || [];
 
   /* derived */
   const billingDays = useMemo(
@@ -441,7 +448,81 @@ const BillDetailScreen = ({ user }) => {
           </div>
         )}
 
-        {/* ── SECTION 5: Actions ── */}
+        {/* ── SECTION 5: Allocations ── */}
+        {allocationList.length > 0 && (
+          <div className="bg-white rounded-3xl border border-border shadow-card overflow-hidden">
+            <div className="px-4 md:px-8 py-5 border-b border-border bg-bg/30 flex items-center gap-2">
+              <Users className="w-4 h-4 text-accent" />
+              <span className="text-sm font-bold text-text">
+                Tenant Allocations
+              </span>
+              <span className="text-sm font-bold text-text-secondary">
+                ({allocationList.length})
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
+                      Tenant
+                    </th>
+                    <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
+                      Method
+                    </th>
+                    <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest text-right">
+                      Percentage
+                    </th>
+                    <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest text-right">
+                      Amount
+                    </th>
+                    <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {allocationList.map((alloc) => {
+                    const methodLabels = {
+                      full_absorption: 'Full Absorption',
+                      gla_prorata: 'GLA Pro-Rata',
+                      fixed: 'Fixed',
+                      percentage: 'Percentage',
+                    };
+                    const statusStyles = {
+                      pending: 'bg-warning-light text-warning-dark',
+                      invoiced: 'bg-accent-light text-accent',
+                      paid: 'bg-success-light text-success',
+                    };
+                    return (
+                      <tr key={alloc.id} className="hover:bg-bg transition-colors">
+                        <td className="px-4 md:px-8 py-4 text-sm font-bold text-text">
+                          {alloc.tenantName || alloc.tenantId || '\u2014'}
+                        </td>
+                        <td className="px-4 md:px-8 py-4 text-sm font-bold text-text-secondary">
+                          {methodLabels[alloc.method] || alloc.method || '\u2014'}
+                        </td>
+                        <td className="px-4 md:px-8 py-4 text-sm font-bold text-text-secondary text-right font-mono">
+                          {alloc.percentage != null ? `${alloc.percentage}%` : '\u2014'}
+                        </td>
+                        <td className="px-4 md:px-8 py-4 text-sm font-bold text-text text-right font-mono">
+                          {formatCurrency(alloc.amount)}
+                        </td>
+                        <td className="px-4 md:px-8 py-4">
+                          <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${statusStyles[alloc.status] || 'bg-bg-alt text-text-secondary'}`}>
+                            {alloc.status || 'pending'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ── SECTION 6: Actions ── */}
         <div className="bg-white rounded-2xl border border-border shadow-card p-6 md:p-8">
           <h2 className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-5">
             Actions
@@ -459,6 +540,14 @@ const BillDetailScreen = ({ user }) => {
                   <CheckCircle2 className="w-4 h-4" />
                 )}
                 Validate Bill
+              </button>
+            )}
+            {bill.status === 'validated' && (
+              <button
+                onClick={() => setAllocationModalOpen(true)}
+                className="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-accent-hover transition-colors"
+              >
+                <Users className="w-4 h-4" /> Allocate to Tenants
               </button>
             )}
             {bill.status !== 'exception' && (
@@ -532,6 +621,13 @@ const BillDetailScreen = ({ user }) => {
         onClose={() => setExceptionModalOpen(false)}
         billId={id}
         propertyId={bill.propertyId}
+      />
+
+      {/* ═══ ALLOCATION MODAL ═══ */}
+      <AllocationModal
+        isOpen={allocationModalOpen}
+        onClose={() => setAllocationModalOpen(false)}
+        bill={bill}
       />
     </div>
   );

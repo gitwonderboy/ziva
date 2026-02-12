@@ -71,8 +71,10 @@ const ProvidersScreen = () => {
   const filtered = useMemo(() => {
     const q = searchInput.trim().toLowerCase();
     if (!q) return resultList;
-    return resultList.filter(
-      (p) => p.name && p.name.toLowerCase().includes(q)
+    return resultList.filter((p) =>
+      [p.name, p.type, p.contactEmail]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(q))
     );
   }, [resultList, searchInput]);
 

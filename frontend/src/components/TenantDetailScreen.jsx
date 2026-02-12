@@ -13,11 +13,17 @@ import {
   Search,
   Plus,
   AlertTriangle,
+  HandCoins,
+  Send,
+  Receipt,
 } from 'lucide-react';
 import {
   useTenant,
   useUtilityAccountsByTenant,
   useDeleteUtilityAccount,
+  useAllocationsByTenant,
+  useBills,
+  useProperties,
 } from '../firebase';
 import TenantModal from './TenantModal.jsx';
 import UtilityAccountModal from './UtilityAccountModal.jsx';
@@ -67,6 +73,26 @@ const InfoItem = ({ label, value }) => (
   </div>
 );
 
+function formatCurrency(val) {
+  if (val == null) return '\u2014';
+  const n = typeof val === 'number' ? val : parseFloat(val);
+  if (isNaN(n)) return '\u2014';
+  return `R ${n.toLocaleString('en-ZA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function formatDate(val) {
+  if (!val) return '\u2014';
+  if (val.toDate) val = val.toDate();
+  if (val instanceof Date)
+    return val.toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' });
+  if (typeof val === 'string') {
+    const d = new Date(val);
+    if (!isNaN(d))
+      return d.toLocaleDateString('en-ZA', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+  return String(val);
+}
+
 const TenantDetailScreen = ({ user }) => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -78,9 +104,38 @@ const TenantDetailScreen = ({ user }) => {
 
   const { data: tenant, isLoading, isError } = useTenant(id);
   const { data: accounts, isLoading: accountsLoading } = useUtilityAccountsByTenant(id);
+  const { data: allocations, isLoading: allocationsLoading } = useAllocationsByTenant(id);
+  const { data: bills } = useBills();
+  const { data: properties } = useProperties();
   const deleteAccountMutation = useDeleteUtilityAccount();
 
   const accountList = accounts || [];
+  const allocationList = allocations || [];
+
+  const billMap = useMemo(() => {
+    const m = new Map();
+    for (const b of (bills || [])) m.set(b.id, b);
+    return m;
+  }, [bills]);
+
+  const propertyMap = useMemo(() => {
+    const m = new Map();
+    for (const p of (properties || [])) m.set(p.id, p);
+    return m;
+  }, [properties]);
+
+  const allocationTotal = useMemo(
+    () => allocationList.reduce((s, a) => {
+      const n = typeof a.amount === 'number' ? a.amount : parseFloat(a.amount);
+      return s + (isNaN(n) ? 0 : n);
+    }, 0),
+    [allocationList],
+  );
+
+  const pendingAllocations = useMemo(
+    () => allocationList.filter((a) => !a.status || a.status === 'pending'),
+    [allocationList],
+  );
 
   const openCreateAccount = () => {
     setEditingAccount(null);
@@ -350,6 +405,127 @@ const TenantDetailScreen = ({ user }) => {
                 {accountSearch.trim()
                   ? 'No accounts match your search'
                   : 'No utility accounts for this tenant'}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* ALLOCATIONS HISTORY SECTION */}
+        <div className="bg-white rounded-3xl border border-border shadow-card overflow-hidden">
+          <div className="px-4 md:px-8 py-5 border-b border-border bg-bg/30 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <HandCoins className="w-4 h-4 text-accent" />
+              <span className="text-sm font-bold text-text">
+                Allocations History
+              </span>
+              <span className="text-sm font-bold text-text-secondary">
+                ({allocationList.length})
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              {allocationList.length > 0 && (
+                <div className="bg-bg rounded-lg px-3 py-1.5">
+                  <span className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest">Total: </span>
+                  <span className="text-sm font-bold text-text font-mono">
+                    {formatCurrency(allocationTotal)}
+                  </span>
+                </div>
+              )}
+              {pendingAllocations.length > 0 && (
+                <button
+                  className="bg-accent text-white px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 hover:bg-accent-hover transition-colors shrink-0"
+                >
+                  <Send className="w-3.5 h-3.5" /> Generate Invoice
+                </button>
+              )}
+            </div>
+          </div>
+
+          {allocationsLoading ? (
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <Loader2 className="w-6 h-6 text-accent animate-spin" />
+              <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading allocations...</p>
+            </div>
+          ) : allocationList.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
+                      Bill Period
+                    </th>
+                    <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
+                      Property
+                    </th>
+                    <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest hidden md:table-cell">
+                      Provider
+                    </th>
+                    <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest text-right">
+                      Amount
+                    </th>
+                    <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {allocationList.map((alloc) => {
+                    const bill = alloc.billId ? billMap.get(alloc.billId) : null;
+                    const prop = alloc.propertyId ? propertyMap.get(alloc.propertyId) : null;
+                    const allocStatusStyles = {
+                      pending: 'bg-warning-light text-warning-dark',
+                      invoiced: 'bg-accent-light text-accent',
+                      paid: 'bg-success-light text-success',
+                    };
+                    const allocStatusLabels = {
+                      pending: 'Pending',
+                      invoiced: 'Invoiced',
+                      paid: 'Paid',
+                    };
+                    const st = alloc.status || 'pending';
+                    return (
+                      <tr
+                        key={alloc.id}
+                        className="hover:bg-bg transition-colors cursor-pointer"
+                        onClick={() => { if (alloc.billId) navigate(`/bills/${alloc.billId}`); }}
+                      >
+                        <td className="px-4 md:px-8 py-4">
+                          <div className="flex items-center gap-2">
+                            <Receipt className="w-3.5 h-3.5 text-accent shrink-0" />
+                            <span className="text-sm font-bold text-text">
+                              {bill
+                                ? `${formatDate(bill.billingPeriodStart)} – ${formatDate(bill.billingPeriodEnd)}`
+                                : '\u2014'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 md:px-8 py-4 text-sm font-bold text-text">
+                          {prop?.bpNumber || prop?.name || '\u2014'}
+                        </td>
+                        <td className="px-4 md:px-8 py-4 text-sm font-bold text-text-secondary hidden md:table-cell">
+                          {bill?.providerName || '\u2014'}
+                        </td>
+                        <td className="px-4 md:px-8 py-4 text-sm font-bold text-text text-right font-mono">
+                          {formatCurrency(alloc.amount)}
+                        </td>
+                        <td className="px-4 md:px-8 py-4">
+                          <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${allocStatusStyles[st] || 'bg-bg-alt text-text-secondary'}`}>
+                            {allocStatusLabels[st] || st}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 px-8">
+              <div className="w-12 h-12 bg-bg-alt rounded-2xl flex items-center justify-center mb-4">
+                <HandCoins className="w-6 h-6 text-text-secondary" />
+              </div>
+              <p className="text-sm font-bold text-text-secondary">
+                No allocations for this tenant
               </p>
             </div>
           )}

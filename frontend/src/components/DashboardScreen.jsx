@@ -35,13 +35,14 @@ import {
   Receipt,
 } from 'lucide-react';
 import { fetchDashboardData, scanInbox } from '../services/api.js';
-import { useProperties, useTenants, useUtilityProviders, useUtilityAccounts } from '../firebase';
+import { useProperties, useTenants, useUtilityProviders, useUtilityAccounts, testFirestoreConnection } from '../firebase';
 import OnboardingScreen from './OnboardingScreen.jsx';
 import PropertiesScreen from './PropertiesScreen.jsx';
 import ProvidersScreen from './ProvidersScreen.jsx';
 import TenantsScreen from './TenantsScreen.jsx';
 import UtilityAccountsScreen from './UtilityAccountsScreen.jsx';
 import BillsScreen from './BillsScreen.jsx';
+import AllocationsScreen from './AllocationsScreen.jsx';
 
 /* ── helpers ── */
 const MONTHS = [
@@ -141,10 +142,24 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['dashboardStats'] }),
   });
 
-  const { data: fbProperties, isLoading: propsLoading } = useProperties();
-  const { data: fbTenants, isLoading: tenantsLoading } = useTenants();
-  const { data: fbProviders, isLoading: providersLoading } = useUtilityProviders();
-  const { data: fbAccounts, isLoading: accountsLoading } = useUtilityAccounts();
+  const { data: fbProperties, isLoading: propsLoading, isError: propsError } = useProperties();
+  const { data: fbTenants, isLoading: tenantsLoading, isError: tenantsError } = useTenants();
+  const { data: fbProviders, isLoading: providersLoading, isError: providersError } = useUtilityProviders();
+  const { data: fbAccounts, isLoading: accountsLoading, isError: accountsError } = useUtilityAccounts();
+
+  const [firestoreStatus, setFirestoreStatus] = useState(null); // null = checking, 'ok', or error string
+  useEffect(() => {
+    testFirestoreConnection().then((result) => {
+      if (result.ok) {
+        setFirestoreStatus('ok');
+      } else {
+        setFirestoreStatus(result.error);
+        console.error('[Firestore] Connection test failed:', result.error);
+      }
+    });
+  }, []);
+
+  const hasFirestoreError = firestoreStatus && firestoreStatus !== 'ok';
 
   const documents = dashboardData?.documents || [];
   const reviewQueue = useMemo(() => documents.filter((doc) => doc.status === 'FAILED'), [documents]);
@@ -283,6 +298,12 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
             label="Bills"
           />
           <SidebarButton
+            active={activeTab === 'allocations'}
+            onClick={() => setActiveTab('allocations')}
+            icon={<HandCoins />}
+            label="Allocations"
+          />
+          <SidebarButton
             active={activeTab === 'settings'}
             onClick={() => setActiveTab('settings')}
             icon={<Settings />}
@@ -307,10 +328,20 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
 
         <div className="p-4 bg-navy-light/40 mx-4 mb-6 rounded-2xl border border-white/10">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 bg-accent rounded-full animate-pulse-emerald"></div>
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-accent">Live Connection</span>
+            <div className={`w-2 h-2 rounded-full ${
+              firestoreStatus === null ? 'bg-warning animate-pulse' :
+              firestoreStatus === 'ok' ? 'bg-accent animate-pulse-emerald' :
+              'bg-error'
+            }`}></div>
+            <span className={`text-[10px] font-semibold uppercase tracking-wider ${
+              firestoreStatus === null ? 'text-warning' :
+              firestoreStatus === 'ok' ? 'text-accent' :
+              'text-error'
+            }`}>
+              {firestoreStatus === null ? 'Connecting...' : firestoreStatus === 'ok' ? 'Connected' : 'Disconnected'}
+            </span>
           </div>
-          <p className="text-[11px] text-text-on-dark/50 leading-tight font-medium">Gateway: af-south-1</p>
+          <p className="text-[11px] text-text-on-dark/50 leading-tight font-medium">Firestore Database</p>
         </div>
       </aside>
 
@@ -390,6 +421,12 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
                 label="Bills"
               />
               <SidebarButton
+                active={activeTab === 'allocations'}
+                onClick={() => handleMobileTabChange('allocations')}
+                icon={<HandCoins />}
+                label="Allocations"
+              />
+              <SidebarButton
                 active={activeTab === 'settings'}
                 onClick={() => handleMobileTabChange('settings')}
                 icon={<Settings />}
@@ -440,6 +477,23 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
           </button>
         </div>
 
+        {/* FIRESTORE CONNECTION ERROR BANNER */}
+        {hasFirestoreError && (
+          <div className="bg-error/10 border-b border-error/20 px-4 py-3 flex items-center gap-3 shrink-0">
+            <AlertCircle size={18} className="text-error shrink-0" />
+            <div className="text-sm text-error">
+              <span className="font-semibold">Firestore connection failed</span>
+              <span className="text-error/70 ml-1">
+                — {firestoreStatus === 'permission-denied'
+                  ? 'Security rules are blocking access. Update Firestore rules in the Firebase Console to allow reads.'
+                  : firestoreStatus === 'unavailable' || firestoreStatus === 'failed-precondition'
+                  ? 'Database is unreachable. Check your .env.local Firebase config values.'
+                  : `Error: ${firestoreStatus}. Verify your .env.local file matches the Firebase project config.`}
+              </span>
+            </div>
+          </div>
+        )}
+
         {activeTab === 'settings' ? (
           <OnboardingScreen user={user} onComplete={() => setActiveTab('activity')} showBackButton={true} />
         ) : activeTab === 'properties' ? (
@@ -452,6 +506,8 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
           <UtilityAccountsScreen user={user} />
         ) : activeTab === 'bills' ? (
           <BillsScreen user={user} />
+        ) : activeTab === 'allocations' ? (
+          <AllocationsScreen user={user} />
         ) : activeTab === 'activity' ? (
           /* ═══════════════════════════════════════════
              OPERATIONS DASHBOARD (activity tab)
