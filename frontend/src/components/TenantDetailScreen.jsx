@@ -175,7 +175,7 @@ const TenantDetailScreen = ({ user }) => {
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-bg font-sans gap-4">
         <Loader2 className="w-10 h-10 text-accent animate-spin" />
-        <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading tenant...</p>
+        <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading</p>
       </div>
     );
   }
@@ -189,7 +189,7 @@ const TenantDetailScreen = ({ user }) => {
         <p className="text-sm font-bold text-error">Tenant not found</p>
         <p className="text-xs text-text-secondary mt-1">This tenant may have been deleted</p>
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => navigate('/dashboard?tab=tenants')}
           className="mt-4 text-sm font-bold text-accent hover:underline"
         >
           Go back
@@ -212,7 +212,7 @@ const TenantDetailScreen = ({ user }) => {
           </button>
           <ChevronRight className="w-3 h-3 text-text-secondary" />
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/dashboard?tab=tenants')}
             className="font-semibold text-text-secondary hover:text-accent transition-colors"
           >
             Tenants
@@ -225,7 +225,7 @@ const TenantDetailScreen = ({ user }) => {
         <div className="px-4 md:px-8 pb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/dashboard?tab=tenants')}
               className="p-2 hover:bg-bg-alt rounded-xl transition-colors"
               title="Back to Tenants"
             >
@@ -314,7 +314,7 @@ const TenantDetailScreen = ({ user }) => {
           {accountsLoading ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3">
               <Loader2 className="w-6 h-6 text-accent animate-spin" />
-              <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading accounts...</p>
+              <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading</p>
             </div>
           ) : filteredAccounts.length > 0 ? (
             <div className="overflow-x-auto">
@@ -444,7 +444,7 @@ const TenantDetailScreen = ({ user }) => {
           {allocationsLoading ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3">
               <Loader2 className="w-6 h-6 text-accent animate-spin" />
-              <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading allocations...</p>
+              <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading</p>
             </div>
           ) : allocationList.length > 0 ? (
             <div className="overflow-x-auto">
@@ -544,7 +544,8 @@ const TenantDetailScreen = ({ user }) => {
         isOpen={accountModalOpen}
         onClose={closeAccountModal}
         utilityAccount={editingAccount}
-        propertyId={editingAccount?.propertyId || null}
+        propertyId={editingAccount?.propertyId || tenant?.propertyId || null}
+        tenantId={id}
       />
 
       {/* DELETE ACCOUNT CONFIRMATION */}

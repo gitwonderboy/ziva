@@ -108,7 +108,7 @@ const TenantsScreen = ({ user }) => {
           </div>
           <button
             onClick={openCreate}
-            className="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-accent-hover transition-colors"
+            className="bg-accent text-white px-5 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-accent-hover transition-colors border border-transparent"
           >
             <Plus className="w-4 h-4" /> Add Tenant
           </button>
@@ -144,7 +144,7 @@ const TenantsScreen = ({ user }) => {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Loader2 className="w-10 h-10 text-accent animate-spin" />
-            <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading tenants...</p>
+            <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading</p>
           </div>
         ) : isError ? (
           <div className="flex flex-col items-center justify-center py-24 px-8">

@@ -91,26 +91,36 @@ const PropertiesScreen = ({ user }) => {
     <>
       {/* DESKTOP HEADER */}
       <header className="h-16 bg-white border-b border-border hidden lg:flex items-center justify-between px-8 shrink-0 z-10">
-        <div className="relative max-w-sm w-full">
-          <Search className="w-4 h-4 text-text-secondary absolute left-4 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search by BP number or name..."
-            className="w-full bg-bg border-border border rounded-xl py-2 pl-12 pr-4 text-sm font-bold outline-none focus:border-accent transition-colors"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
+        <div className="flex items-center gap-3">
+          <Building2 className="w-5 h-5 text-accent" />
+          <h1 className="font-bold text-text text-lg">Properties</h1>
         </div>
-        <button
-          onClick={openCreate}
-          className="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-accent-hover transition-colors"
-        >
-          <Plus className="w-4 h-4" /> Add Property
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="relative max-w-sm w-full">
+            <Search className="w-4 h-4 text-text-secondary absolute left-4 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search by BP number or name..."
+              className="w-full bg-bg border-border border rounded-xl py-2 pl-12 pr-4 text-sm font-bold outline-none focus:border-accent transition-colors"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+          </div>
+          <button
+            onClick={openCreate}
+            className="bg-accent text-white px-5 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-accent-hover transition-colors border border-transparent"
+          >
+            <Plus className="w-4 h-4" /> Add Property
+          </button>
+        </div>
       </header>
 
-      {/* MOBILE SEARCH */}
+      {/* MOBILE HEADER + SEARCH */}
       <div className="lg:hidden px-4 py-3 bg-white border-b border-border shrink-0 space-y-2">
+        <div className="flex items-center gap-3">
+          <Building2 className="w-5 h-5 text-accent" />
+          <h1 className="font-bold text-text">Properties</h1>
+        </div>
         <div className="relative w-full">
           <Search className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -134,7 +144,7 @@ const PropertiesScreen = ({ user }) => {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Loader2 className="w-10 h-10 text-accent animate-spin" />
-            <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading properties...</p>
+            <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading</p>
           </div>
         ) : isError ? (
           <div className="flex flex-col items-center justify-center py-24 px-8">

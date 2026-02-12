@@ -270,7 +270,7 @@ const AllocationModal = ({ isOpen, onClose, bill }) => {
           {tenantsLoading ? (
             <div className="flex flex-col items-center justify-center py-12 gap-3">
               <Loader2 className="w-6 h-6 text-accent animate-spin" />
-              <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading tenants...</p>
+              <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading</p>
             </div>
           ) : tenantList.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-6">

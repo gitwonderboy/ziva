@@ -30,7 +30,7 @@ const EMPTY_FORM = {
   status: 'active',
 };
 
-const UtilityAccountModal = ({ isOpen, onClose, utilityAccount, propertyId }) => {
+const UtilityAccountModal = ({ isOpen, onClose, utilityAccount, propertyId, tenantId }) => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [successMsg, setSuccessMsg] = useState('');
@@ -113,7 +113,8 @@ const UtilityAccountModal = ({ isOpen, onClose, utilityAccount, propertyId }) =>
     };
 
     if (!isEditing) {
-      payload.propertyId = propertyId;
+      if (propertyId) payload.propertyId = propertyId;
+      if (tenantId) payload.tenantId = tenantId;
     }
 
     const onSuccess = () => {

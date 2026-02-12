@@ -159,7 +159,7 @@ const BillDetailScreen = ({ user }) => {
 
   const handleDelete = () => {
     deleteMutation.mutate(id, {
-      onSuccess: () => navigate(-1),
+      onSuccess: () => navigate('/dashboard?tab=bills'),
     });
   };
 
@@ -169,7 +169,7 @@ const BillDetailScreen = ({ user }) => {
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-bg font-sans gap-4">
         <Loader2 className="w-10 h-10 text-accent animate-spin" />
-        <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading bill...</p>
+        <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading</p>
       </div>
     );
   }
@@ -182,7 +182,7 @@ const BillDetailScreen = ({ user }) => {
         </div>
         <p className="text-sm font-bold text-error">Bill not found</p>
         <p className="text-xs text-text-secondary mt-1">This bill may have been deleted</p>
-        <button onClick={() => navigate(-1)} className="mt-4 text-sm font-bold text-accent hover:underline">
+        <button onClick={() => navigate('/dashboard?tab=bills')} className="mt-4 text-sm font-bold text-accent hover:underline">
           Go back
         </button>
       </div>
@@ -205,7 +205,7 @@ const BillDetailScreen = ({ user }) => {
           </button>
           <ChevronRight className="w-3 h-3 text-text-secondary" />
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/dashboard?tab=bills')}
             className="font-semibold text-text-secondary hover:text-accent transition-colors"
           >
             Bills
@@ -220,7 +220,7 @@ const BillDetailScreen = ({ user }) => {
         <div className="px-4 md:px-8 pb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/dashboard?tab=bills')}
               className="p-2 hover:bg-bg-alt rounded-xl transition-colors"
               title="Back to Bills"
             >

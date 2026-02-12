@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   BarChart3,
@@ -120,16 +121,24 @@ const EXCEPTION_COLORS = {
 /* ════════════════════════════════════════════════════
    MAIN COMPONENT
    ════════════════════════════════════════════════════ */
-const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) => {
+const DashboardScreen = ({ user, onLogout, onReset }) => {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab') || 'activity';
+  const [activeTab, setActiveTabState] = useState(tabFromUrl);
   const [filterQuery, setFilterQuery] = useState('');
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Keep activeTab in sync with URL search params
   useEffect(() => {
-    setActiveTab(initialTab);
-  }, [initialTab]);
+    setActiveTabState(tabFromUrl);
+  }, [tabFromUrl]);
+
+  const setActiveTab = useCallback((tab) => {
+    setActiveTabState(tab);
+    setSearchParams(tab === 'activity' ? {} : { tab }, { replace: true });
+  }, [setSearchParams]);
 
   const { data: dashboardData, isLoading } = useQuery({
     queryKey: ['dashboardStats', user?.email],
@@ -239,7 +248,7 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
     return (
       <div className="h-screen w-full flex flex-col items-center justify-center bg-bg gap-4">
         <Loader2 className="w-12 h-12 text-accent animate-spin" />
-        <p className="font-bold text-text-secondary uppercase tracking-widest text-[10px]">Loading Dashboard...</p>
+        <p className="font-bold text-text-secondary uppercase tracking-widest text-[10px]">Loading</p>
       </div>
     );
 

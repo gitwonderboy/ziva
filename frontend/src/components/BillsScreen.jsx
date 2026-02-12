@@ -224,7 +224,7 @@ const BillsScreen = ({ user }) => {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Loader2 className="w-10 h-10 text-accent animate-spin" />
-            <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading bills...</p>
+            <p className="text-xs font-bold text-text-secondary uppercase tracking-widest">Loading</p>
           </div>
         ) : isError ? (
           <div className="flex flex-col items-center justify-center py-24 px-8">
