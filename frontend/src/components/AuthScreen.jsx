@@ -29,46 +29,46 @@ const AuthScreen = ({ onLogin }) => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row font-sans bg-white">
       {/* MOBILE BRANDING BAR */}
-      <div className="flex md:hidden items-center gap-2 px-6 py-4 bg-slate-900">
-        <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
+      <div className="flex md:hidden items-center gap-2 px-6 py-4 bg-navy">
+        <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
           <ShieldCheck className="text-white w-4 h-4" />
         </div>
         <span className="text-lg font-bold tracking-tight text-white">Ziva Platform</span>
       </div>
 
       {/* LEFT PANEL: Branding & Marketing */}
-      <div className="hidden md:flex flex-1 bg-slate-900 items-center justify-center p-12 text-white relative overflow-hidden">
+      <div className="hidden md:flex flex-1 bg-navy items-center justify-center p-12 text-white relative overflow-hidden">
         {/* Decorative Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-transparent pointer-events-none" />
 
         <div className="max-w-md z-10">
           <div className="flex items-center gap-2 mb-8">
-            <div className="w-10 h-10 bg-indigo-500 rounded-lg flex items-center justify-center shadow-lg border border-white/20">
+            <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center shadow-lg border border-white/20">
               <ShieldCheck className="text-white w-6 h-6" />
             </div>
             <span className="text-2xl font-bold tracking-tight text-white">Ziva Platform</span>
           </div>
 
-          <h1 className="text-4xl font-black mb-6 leading-tight">
+          <h1 className="text-4xl font-bold mb-6 leading-tight">
             Review by Exception. <br />
-            <span className="text-indigo-300">Scale with Ease.</span>
+            <span className="text-accent/70">Scale with Ease.</span>
           </h1>
 
-          <p className="text-indigo-100 text-lg leading-relaxed mb-10 font-medium opacity-90">
+          <p className="text-text-on-dark/80 text-lg leading-relaxed mb-10 font-medium opacity-90">
             Automate your property revenue verification. We extract, match, and highlight discrepancies so you only
             spend time where it matters.
           </p>
 
           <div className="grid grid-cols-2 gap-6">
             <div className="bg-white/5 p-5 rounded-2xl backdrop-blur-md border border-white/10">
-              <div className="text-3xl font-black text-white">98%</div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-indigo-200 mt-1">
+              <div className="text-3xl font-bold text-white">98%</div>
+              <div className="text-[10px] font-medium uppercase tracking-widest text-text-on-dark/70 mt-1">
                 Extraction Accuracy
               </div>
             </div>
             <div className="bg-white/5 p-5 rounded-2xl backdrop-blur-md border border-white/10">
-              <div className="text-3xl font-black text-white">1.2s</div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-indigo-200 mt-1">
+              <div className="text-3xl font-bold text-white">1.2s</div>
+              <div className="text-[10px] font-medium uppercase tracking-widest text-text-on-dark/70 mt-1">
                 Processing Speed
               </div>
             </div>
@@ -80,18 +80,18 @@ const AuthScreen = ({ onLogin }) => {
       <div className="flex-1 flex items-center justify-center p-8 bg-white">
         <div className="w-full max-w-sm">
           <div className="mb-10 text-center md:text-left">
-            <h2 className="text-3xl font-black text-slate-900 mb-3 tracking-tight">Welcome back</h2>
-            <p className="text-slate-500 font-medium">Sign in to your portal to manage your portfolio.</p>
+            <h2 className="text-3xl font-bold text-text mb-3 tracking-tight">Welcome back</h2>
+            <p className="text-text-secondary font-medium">Sign in to your portal to manage your portfolio.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Email address</label>
+              <label className="text-xs font-medium text-text-secondary uppercase tracking-widest ml-1">Email address</label>
               <input
                 type="email"
                 required
                 disabled={loading}
-                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 disabled:opacity-50"
+                className="w-full px-5 py-3.5 bg-bg border border-border rounded-2xl focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none transition-all font-medium text-text disabled:opacity-50"
                 placeholder="alex@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -99,12 +99,12 @@ const AuthScreen = ({ onLogin }) => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Password</label>
+              <label className="text-xs font-medium text-text-secondary uppercase tracking-widest ml-1">Password</label>
               <input
                 type="password"
                 required
                 disabled={loading}
-                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-bold text-slate-900 disabled:opacity-50"
+                className="w-full px-5 py-3.5 bg-bg border border-border rounded-2xl focus:ring-4 focus:ring-accent/10 focus:border-accent outline-none transition-all font-medium text-text disabled:opacity-50"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -115,13 +115,13 @@ const AuthScreen = ({ onLogin }) => {
               <label className="flex items-center gap-2 cursor-pointer group">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                  className="w-4 h-4 rounded border-border text-accent focus:ring-accent cursor-pointer"
                 />
-                <span className="text-sm font-bold text-slate-500 group-hover:text-slate-700 transition-colors">
+                <span className="text-sm font-medium text-text-secondary group-hover:text-text transition-colors">
                   Keep me signed in
                 </span>
               </label>
-              <button type="button" className="text-sm font-bold text-indigo-600 hover:text-indigo-700">
+              <button type="button" className="text-sm font-medium text-accent hover:text-accent-hover">
                 Reset password?
               </button>
             </div>
@@ -129,7 +129,7 @@ const AuthScreen = ({ onLogin }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10 flex items-center justify-center gap-2 group active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full bg-accent text-white py-4 rounded-2xl font-bold hover:bg-accent-hover transition-all shadow-xl shadow-accent/20 flex items-center justify-center gap-2 group active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -142,8 +142,8 @@ const AuthScreen = ({ onLogin }) => {
             </button>
           </form>
 
-          <p className="mt-10 text-center text-sm font-bold text-slate-400">
-            New to Ziva? <button className="text-indigo-600 hover:underline">Start free trial</button>
+          <p className="mt-10 text-center text-sm font-medium text-text-secondary">
+            New to Ziva? <button className="text-accent hover:underline">Start free trial</button>
           </p>
         </div>
       </div>

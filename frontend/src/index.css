@@ -1,17 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
-
-/* @tailwind base;
-@tailwind components; */
 @tailwind utilities;
+
+@theme {
+  /* Primary */
+  --color-navy: #1A2B48;
+  --color-navy-hover: #243758;
+  --color-navy-light: #2A3F5F;
+  --color-navy-50: #EDF0F4;
+  /* Accent */
+  --color-accent: #2ECC71;
+  --color-accent-hover: #27AE60;
+  --color-accent-light: #E8F8F0;
+  --color-accent-15: rgba(46, 204, 113, 0.15);
+  /* Status */
+  --color-success: #27AE60;
+  --color-success-light: #E8F8F0;
+  --color-warning: #F2A900;
+  --color-warning-light: #FFF8E1;
+  --color-warning-dark: #C58800;
+  --color-error: #E74C3C;
+  --color-error-light: #FDE8E8;
+  /* Backgrounds */
+  --color-bg: #F8F9FA;
+  --color-bg-alt: #EEF0F2;
+  --color-bg-card: #FFFFFF;
+  /* Text */
+  --color-text: #2D3436;
+  --color-text-secondary: #636E72;
+  --color-text-on-dark: #FFFFFF;
+  /* Border */
+  --color-border: #E0E4E8;
+  /* Shadows */
+  --shadow-card: 0 2px 12px rgba(26, 43, 72, 0.08);
+  --shadow-card-hover: 0 4px 20px rgba(26, 43, 72, 0.12);
+  --shadow-dropdown: 0 8px 24px rgba(26, 43, 72, 0.15);
+  --shadow-nav: 2px 0 12px rgba(26, 43, 72, 0.1);
+}
 
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, sans-serif;
-  @apply bg-slate-50 text-slate-900;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  @apply bg-bg text-text;
 }
 
 .stripe-gradient {
-  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  background: linear-gradient(135deg, #1A2B48 0%, #2A3F5F 100%);
   position: relative;
   overflow: hidden;
 }
@@ -65,3 +101,10 @@ body {
 .animate-slide-in-left {
   animation: slideInLeft 0.3s ease-out both;
 }
+
+/* Pulsing emerald dot for Live Connection */
+@keyframes pulse-emerald {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7); }
+  50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(46, 204, 113, 0); }
+}
+.animate-pulse-emerald { animation: pulse-emerald 2s ease-in-out infinite; }

@@ -4,6 +4,9 @@ import AuthScreen from './components/AuthScreen.jsx';
 import OnboardingScreen from './components/OnboardingScreen.jsx';
 import DashboardScreen from './components/DashboardScreen.jsx';
 import AuthSuccess from './components/AuthSuccess.jsx';
+import PropertyDetailScreen from './components/PropertyDetailScreen.jsx';
+import TenantDetailScreen from './components/TenantDetailScreen.jsx';
+import BillDetailScreen from './components/BillDetailScreen.jsx';
 
 function AppContent() {
   const navigate = useNavigate();
@@ -57,6 +60,9 @@ function AppContent() {
       <Route path="/onboarding" element={user ? <OnboardingScreen user={user} onComplete={handleCompleteOnboarding} /> : <Navigate to="/" replace />} />
       <Route path="/auth-success" element={<AuthSuccess />} />
       <Route path="/dashboard" element={user && isSetupDone ? <DashboardScreen user={user} onLogout={handleLogout} onReset={handleReset} /> : <Navigate to="/" replace />} />
+      <Route path="/properties/:id" element={user && isSetupDone ? <PropertyDetailScreen user={user} /> : <Navigate to="/" replace />} />
+      <Route path="/tenants/:id" element={user && isSetupDone ? <TenantDetailScreen user={user} /> : <Navigate to="/" replace />} />
+      <Route path="/bills/:id" element={user && isSetupDone ? <BillDetailScreen user={user} /> : <Navigate to="/" replace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

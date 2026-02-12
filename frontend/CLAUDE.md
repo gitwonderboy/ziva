@@ -62,3 +62,41 @@ Flat config in `eslint.config.js`. `no-unused-vars` is set to error but ignores 
 - No error boundaries
 - No Prettier/formatter config
 - Auth is mock (accepts any email)
+
+## Design System: "Sophisticated Clarity" Theme
+
+### Color Tokens (replace existing slate/indigo palette)
+- **Primary / Nav / Headers:** Deep Navy `#1A2B48`
+- **Primary Hover:** `#243758`
+- **Accent:** Soft Emerald `#2ECC71`
+- **Success:** `#27AE60`
+- **Warning:** Warm Gold `#F2A900`
+- **Error:** Soft Coral `#E74C3C`
+- **Background Primary:** Off-White `#F8F9FA`
+- **Background Secondary:** `#EEF0F2`
+- **Cards:** `#FFFFFF`
+- **Text Primary:** `#2D3436`
+- **Text Secondary:** `#636E72`
+- **Text on Dark:** `#FFFFFF`
+- **Border:** `#E0E4E8`
+- **Sidebar:** Navy background, white text (0.7 opacity, 1.0 active), emerald left-border active indicator
+
+### Typography
+- Font: `Inter` (Google Fonts import)
+- Base: 16px, weights 400/500/600/700
+- WCAG AA contrast required on all text
+
+### Component Rules
+- Cards: white bg, `rounded-xl`, soft shadow `0 2px 12px rgba(26,43,72,0.08)`, 24px padding
+- Buttons: 48px min-height, `rounded-xl`, 0.2s transitions
+- Tables: alternating rows `#FFFFFF`/`#F8F9FA`, pill-shaped status badges
+- Inputs: 48px height, floating labels, 2px emerald focus ring
+- No hardcoded colors — always use Tailwind theme tokens or CSS custom properties
+- Preserve all inline helper component patterns (DetailBox, SidebarButton, KPICard, etc.)
+
+### Screens
+- **Dashboard:** Status ribbon (navy stat cards), emerald progress ring, clean activity tables
+- **Providers:** Information tiles with utility type icons, expandable detail views
+- **Documents:** Filterable table with status badges
+- **Tenants:** Card grid layout
+- **Settings:** Grouped sections with emerald toggle switches
