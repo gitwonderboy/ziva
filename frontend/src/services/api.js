@@ -1,4 +1,6 @@
-const BASE_URL = 'https://a4sklso1b4.execute-api.af-south-1.amazonaws.com/prod';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+const isEmpty = (val) => !val || val === 'null' || val === 'Unknown';
 
 export const fetchDashboardData = async (userEmail) => {
   if (!userEmail) return null;
@@ -16,15 +18,16 @@ export const fetchDashboardData = async (userEmail) => {
     },
     documents: data.records.map((rec) => ({
       id: rec.message_id,
-      fileName: rec.s3_path.split('/').pop(),
-      tenant: rec.tenant_id,
+      fileName: rec.s3_path?.split('/').pop() || 'Unknown',
+      tenant: rec.admin_id,
       address: rec.doc_address,
+      municipality: rec.municipality,
       status: rec.status === 'PROCESSED' ? 'SUCCESS' : 'FAILED',
       amount: rec.doc_total,
       receivedAt: rec.received_at,
       accNo: rec.doc_acc_no,
       date: rec.doc_date,
-      isUnreadable: rec.doc_address === 'UNREADABLE' || rec.doc_date === 'UNREADABLE',
+      isUnreadable: isEmpty(rec.doc_acc_no) && isEmpty(rec.doc_address) && isEmpty(rec.municipality),
     })),
     chartData: processMonthlyStats(data.records),
   };

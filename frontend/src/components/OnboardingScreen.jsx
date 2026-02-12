@@ -5,7 +5,7 @@ const OnboardingScreen = ({ user, onComplete, showBackButton = true }) => {
 
   const handleMicrosoftConnect = () => {
     const encodedEmail = encodeURIComponent(user?.email || 'guest');
-    const MICROSOFT_LOGIN_URL = `https://a4sklso1b4.execute-api.af-south-1.amazonaws.com/prod/login/microsoft?email=${encodedEmail}`;
+    const MICROSOFT_LOGIN_URL = `${import.meta.env.VITE_API_BASE_URL}/login/microsoft?email=${encodedEmail}`;
     window.location.href = MICROSOFT_LOGIN_URL;
   };
 

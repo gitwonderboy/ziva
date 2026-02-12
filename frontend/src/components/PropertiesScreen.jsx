@@ -113,7 +113,7 @@ const PropertiesScreen = ({ user }) => {
   });
 
   const saveMutation = useMutation({
-    mutationFn: (data) => upsertProperty({ ...data, tenant_id: user?.email }),
+    mutationFn: (data) => upsertProperty({ ...data, admin_id: user?.email }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['properties', 'search'] });
       closeDrawer();

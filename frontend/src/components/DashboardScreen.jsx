@@ -101,8 +101,8 @@ const ProgressRing = ({ percent, size = 120, stroke = 10 }) => {
 const EXCEPTION_TYPES = ['Validation', 'Extraction', 'Reconciliation', 'Missing Bill'];
 function getExceptionType(doc) {
   if (doc.isUnreadable) return 'Extraction';
-  if (!doc.amount || parseAmount(doc.amount) === 0) return 'Missing Bill';
-  if (!doc.accNo || doc.accNo === 'Unknown') return 'Validation';
+  if (!doc.amount || doc.amount === 'null' || parseAmount(doc.amount) === 0) return 'Missing Bill';
+  if (!doc.accNo || doc.accNo === 'null' || doc.accNo === 'Unknown') return 'Validation';
   return 'Reconciliation';
 }
 const EXCEPTION_COLORS = {
@@ -132,10 +132,24 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
     enabled: !!user?.email,
   });
 
+  const [syncSuccess, setSyncSuccess] = useState(false);
+
   const syncMutation = useMutation({
     mutationFn: () => scanInbox(user?.email),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['dashboardStats'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
+      setSyncSuccess(true);
+    },
   });
+
+  useEffect(() => {
+    if (!syncSuccess) return;
+    const timer = setTimeout(() => {
+      setSyncSuccess(false);
+      setActiveTab('activity');
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [syncSuccess]);
 
   const documents = dashboardData?.documents || [];
   const reviewQueue = useMemo(() => documents.filter((doc) => doc.status === 'FAILED'), [documents]);
@@ -437,7 +451,7 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
                   onClick={() => syncMutation.mutate()}
                   className="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-black flex items-center gap-2 hover:bg-slate-800 transition-colors"
                 >
-                  <RefreshCcw className={`w-4 h-4 ${syncMutation.isPending ? 'animate-spin' : ''}`} /> Sync Data
+                  <RefreshCcw className={`w-4 h-4 ${syncMutation.isPending ? 'animate-spin' : ''}`} /> Sync Inbox
                 </button>
               </div>
             </header>
@@ -794,7 +808,7 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
                   onClick={() => syncMutation.mutate()}
                   className="bg-slate-900 text-white px-5 py-2.5 rounded-xl text-sm font-black flex items-center gap-2 hover:bg-slate-800 transition-colors"
                 >
-                  <RefreshCcw className={`w-4 h-4 ${syncMutation.isPending ? 'animate-spin' : ''}`} /> Sync Data
+                  <RefreshCcw className={`w-4 h-4 ${syncMutation.isPending ? 'animate-spin' : ''}`} /> Sync Inbox
                 </button>
               </div>
             </header>
@@ -959,6 +973,23 @@ const DashboardScreen = ({ user, onLogout, onReset, initialTab = 'activity' }) =
                     Validate Entry
                   </button>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+        {/* ═══ SYNC SUCCESS SPLASH ═══ */}
+        {syncSuccess && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white rounded-3xl shadow-2xl p-10 flex flex-col items-center max-w-sm mx-4 animate-scale-in">
+              <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
+                <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 mb-2">Inbox Synced</h2>
+              <p className="text-sm font-bold text-slate-400 text-center leading-relaxed">
+                Your documents have been pulled and are being processed. New results will appear on the dashboard shortly.
+              </p>
+              <div className="mt-6 h-1 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full animate-shrink-bar" />
               </div>
             </div>
           </div>
