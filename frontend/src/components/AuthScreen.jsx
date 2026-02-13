@@ -33,7 +33,7 @@ const AuthScreen = ({ onLogin }) => {
         <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
           <ShieldCheck className="text-white w-4 h-4" />
         </div>
-        <span className="text-lg font-bold tracking-tight text-white">Ziva Platform</span>
+        <span className="text-lg font-bold tracking-tight text-white">Ziva</span>
       </div>
 
       {/* LEFT PANEL: Branding & Marketing */}
@@ -46,7 +46,7 @@ const AuthScreen = ({ onLogin }) => {
             <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center shadow-lg border border-white/20">
               <ShieldCheck className="text-white w-6 h-6" />
             </div>
-            <span className="text-2xl font-bold tracking-tight text-white">Ziva Platform</span>
+            <span className="text-2xl font-bold tracking-tight text-white">Ziva</span>
           </div>
 
           <h1 className="text-4xl font-bold mb-6 leading-tight">
