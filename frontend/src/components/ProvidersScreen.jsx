@@ -45,17 +45,6 @@ const TypeBadge = ({ type }) => {
   );
 };
 
-const StatusBadge = ({ status }) => {
-  const styles =
-    status === 'active'
-      ? 'bg-success-light text-success'
-      : 'bg-bg-alt text-text-secondary';
-  return (
-    <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${styles}`}>
-      {status || 'unknown'}
-    </span>
-  );
-};
 
 const ProvidersScreen = () => {
   const [searchInput, setSearchInput] = useState('');
@@ -114,7 +103,7 @@ const ProvidersScreen = () => {
       <header className="h-16 bg-white border-b border-border hidden lg:flex items-center justify-between px-8 shrink-0 z-10">
         <div className="flex items-center gap-3">
           <Landmark className="w-5 h-5 text-accent" />
-          <h1 className="font-bold text-text text-lg">Utility Providers</h1>
+          <h1 className="font-bold text-text text-lg">Providers</h1>
         </div>
         <div className="flex items-center gap-3">
           <div className="relative max-w-sm w-full">
@@ -129,9 +118,9 @@ const ProvidersScreen = () => {
           </div>
           <button
             onClick={openCreate}
-            className="bg-accent text-white px-5 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-accent-hover transition-colors border border-transparent"
+            className="bg-accent text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap"
           >
-            <Plus className="w-4 h-4" /> Add Provider
+            <Plus className="w-4 h-4" /> Add
           </button>
         </div>
       </header>
@@ -140,7 +129,7 @@ const ProvidersScreen = () => {
       <div className="lg:hidden px-4 py-3 bg-white border-b border-border shrink-0 space-y-2">
         <div className="flex items-center gap-3">
           <Landmark className="w-5 h-5 text-accent" />
-          <h1 className="font-bold text-text">Utility Providers</h1>
+          <h1 className="font-bold text-text">Providers</h1>
         </div>
         <div className="relative w-full">
           <Search className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2" />
@@ -154,9 +143,9 @@ const ProvidersScreen = () => {
         </div>
         <button
           onClick={openCreate}
-          className="w-full bg-accent text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-accent-hover transition-colors"
+          className="w-full bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-accent-hover transition-colors"
         >
-          <Plus className="w-3.5 h-3.5" /> Add Provider
+          <Plus className="w-3.5 h-3.5" /> Add
         </button>
       </div>
 
@@ -224,9 +213,6 @@ const ProvidersScreen = () => {
                       <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
                         Type
                       </th>
-                      <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest hidden sm:table-cell">
-                        Status
-                      </th>
                       <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest w-24">
                         Actions
                       </th>
@@ -250,9 +236,6 @@ const ProvidersScreen = () => {
                         </td>
                         <td className="px-4 md:px-8 py-4 md:py-5">
                           <TypeBadge type={provider.type} />
-                        </td>
-                        <td className="px-4 md:px-8 py-4 md:py-5 hidden sm:table-cell">
-                          <StatusBadge status={provider.status} />
                         </td>
                         <td className="px-4 md:px-8 py-4 md:py-5">
                           <div className="flex items-center gap-1">

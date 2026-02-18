@@ -13,11 +13,6 @@ const BILLING_CYCLE_OPTIONS = [
   { value: 'bi-monthly', label: 'Bi-Monthly' },
 ];
 
-const STATUS_OPTIONS = [
-  { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' },
-];
-
 const EMPTY_FORM = {
   name: '',
   shortName: '',
@@ -25,7 +20,6 @@ const EMPTY_FORM = {
   billingCycle: 'monthly',
   contactPhone: '',
   contactEmail: '',
-  status: 'active',
 };
 
 const ProviderModal = ({ isOpen, onClose, provider }) => {
@@ -54,7 +48,6 @@ const ProviderModal = ({ isOpen, onClose, provider }) => {
           billingCycle: provider.billingCycle || 'monthly',
           contactPhone: provider.contactPhone || '',
           contactEmail: provider.contactEmail || '',
-          status: provider.status || 'active',
         });
       } else {
         setForm(EMPTY_FORM);
@@ -94,7 +87,6 @@ const ProviderModal = ({ isOpen, onClose, provider }) => {
       billingCycle: form.billingCycle,
       contactPhone: form.contactPhone.trim(),
       contactEmail: form.contactEmail.trim(),
-      status: form.status,
     };
 
     const onSuccess = () => {
@@ -233,21 +225,6 @@ const ProviderModal = ({ isOpen, onClose, provider }) => {
             </div>
           </div>
 
-          {/* Status */}
-          <div>
-            <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
-              Status
-            </label>
-            <select
-              value={form.status}
-              onChange={(e) => handleChange('status', e.target.value)}
-              className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
-            >
-              {STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
         </div>
 
         {/* Footer */}
