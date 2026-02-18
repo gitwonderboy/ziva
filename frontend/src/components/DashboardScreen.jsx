@@ -270,23 +270,17 @@ const DashboardScreen = ({ user, onLogout, onReset }) => {
             icon={<BarChart3 />}
             label="Dashboard"
           />
-          <SidebarButton
+          {/* <SidebarButton
             active={activeTab === 'documents'}
             onClick={() => setActiveTab('documents')}
             icon={<FileText />}
             label="Documents"
-          />
+          /> */}
           <SidebarButton
             active={activeTab === 'properties'}
             onClick={() => setActiveTab('properties')}
             icon={<Building2 />}
             label="Properties"
-          />
-          <SidebarButton
-            active={activeTab === 'providers'}
-            onClick={() => setActiveTab('providers')}
-            icon={<Landmark />}
-            label="Providers"
           />
           <SidebarButton
             active={activeTab === 'tenants'}
@@ -295,12 +289,18 @@ const DashboardScreen = ({ user, onLogout, onReset }) => {
             label="Tenants"
           />
           <SidebarButton
+            active={activeTab === 'providers'}
+            onClick={() => setActiveTab('providers')}
+            icon={<Landmark />}
+            label="Providers"
+          />
+          <SidebarButton
             active={activeTab === 'accounts'}
             onClick={() => setActiveTab('accounts')}
             icon={<Zap />}
             label="Utility Accounts"
           />
-          <SidebarButton
+          {/* <SidebarButton
             active={activeTab === 'bills'}
             onClick={() => setActiveTab('bills')}
             icon={<Receipt />}
@@ -311,7 +311,7 @@ const DashboardScreen = ({ user, onLogout, onReset }) => {
             onClick={() => setActiveTab('allocations')}
             icon={<HandCoins />}
             label="Allocations"
-          />
+          /> */}
           <SidebarButton
             active={activeTab === 'settings'}
             onClick={() => setActiveTab('settings')}
@@ -337,16 +337,20 @@ const DashboardScreen = ({ user, onLogout, onReset }) => {
 
         <div className="p-4 bg-navy-light/40 mx-4 mb-6 rounded-2xl border border-white/10">
           <div className="flex items-center gap-2 mb-2">
-            <div className={`w-2 h-2 rounded-full ${
-              firestoreStatus === null ? 'bg-warning animate-pulse' :
-              firestoreStatus === 'ok' ? 'bg-accent animate-pulse-emerald' :
-              'bg-error'
-            }`}></div>
-            <span className={`text-[10px] font-semibold uppercase tracking-wider ${
-              firestoreStatus === null ? 'text-warning' :
-              firestoreStatus === 'ok' ? 'text-accent' :
-              'text-error'
-            }`}>
+            <div
+              className={`w-2 h-2 rounded-full ${
+                firestoreStatus === null
+                  ? 'bg-warning animate-pulse'
+                  : firestoreStatus === 'ok'
+                    ? 'bg-accent animate-pulse-emerald'
+                    : 'bg-error'
+              }`}
+            ></div>
+            <span
+              className={`text-[10px] font-semibold uppercase tracking-wider ${
+                firestoreStatus === null ? 'text-warning' : firestoreStatus === 'ok' ? 'text-accent' : 'text-error'
+              }`}
+            >
               {firestoreStatus === null ? 'Connecting...' : firestoreStatus === 'ok' ? 'Connected' : 'Disconnected'}
             </span>
           </div>
@@ -493,11 +497,12 @@ const DashboardScreen = ({ user, onLogout, onReset }) => {
             <div className="text-sm text-error">
               <span className="font-semibold">Firestore connection failed</span>
               <span className="text-error/70 ml-1">
-                — {firestoreStatus === 'permission-denied'
+                —{' '}
+                {firestoreStatus === 'permission-denied'
                   ? 'Security rules are blocking access. Update Firestore rules in the Firebase Console to allow reads.'
                   : firestoreStatus === 'unavailable' || firestoreStatus === 'failed-precondition'
-                  ? 'Database is unreachable. Check your .env.local Firebase config values.'
-                  : `Error: ${firestoreStatus}. Verify your .env.local file matches the Firebase project config.`}
+                    ? 'Database is unreachable. Check your .env.local Firebase config values.'
+                    : `Error: ${firestoreStatus}. Verify your .env.local file matches the Firebase project config.`}
               </span>
             </div>
           </div>
@@ -548,10 +553,38 @@ const DashboardScreen = ({ user, onLogout, onReset }) => {
               {/* ── PORTFOLIO OVERVIEW ── */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
-                  { label: 'Properties', data: fbProperties, loading: propsLoading, icon: <Building2 className="w-5 h-5 text-navy" />, color: 'bg-navy-50', tab: 'properties' },
-                  { label: 'Tenants', data: fbTenants, loading: tenantsLoading, icon: <Users className="w-5 h-5 text-accent" />, color: 'bg-accent-light', tab: 'tenants' },
-                  { label: 'Providers', data: fbProviders, loading: providersLoading, icon: <Landmark className="w-5 h-5 text-warning" />, color: 'bg-warning-light', tab: 'providers' },
-                  { label: 'Utility Accounts', data: fbAccounts, loading: accountsLoading, icon: <Zap className="w-5 h-5 text-success" />, color: 'bg-success-light', tab: 'accounts' },
+                  {
+                    label: 'Properties',
+                    data: fbProperties,
+                    loading: propsLoading,
+                    icon: <Building2 className="w-5 h-5 text-navy" />,
+                    color: 'bg-navy-50',
+                    tab: 'properties',
+                  },
+                  {
+                    label: 'Tenants',
+                    data: fbTenants,
+                    loading: tenantsLoading,
+                    icon: <Users className="w-5 h-5 text-accent" />,
+                    color: 'bg-accent-light',
+                    tab: 'tenants',
+                  },
+                  {
+                    label: 'Providers',
+                    data: fbProviders,
+                    loading: providersLoading,
+                    icon: <Landmark className="w-5 h-5 text-warning" />,
+                    color: 'bg-warning-light',
+                    tab: 'providers',
+                  },
+                  {
+                    label: 'Utility Accounts',
+                    data: fbAccounts,
+                    loading: accountsLoading,
+                    icon: <Zap className="w-5 h-5 text-success" />,
+                    color: 'bg-success-light',
+                    tab: 'accounts',
+                  },
                 ].map((card) => (
                   <div
                     key={card.label}
@@ -559,14 +592,18 @@ const DashboardScreen = ({ user, onLogout, onReset }) => {
                     className={`bg-white p-5 rounded-2xl border border-border shadow-card ${card.tab ? 'cursor-pointer hover:shadow-card-hover hover:border-accent transition-all' : ''}`}
                   >
                     <div className="flex justify-between items-center mb-4">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${card.color}`}>{card.icon}</div>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${card.color}`}>
+                        {card.icon}
+                      </div>
                       {card.loading ? (
                         <div className="w-10 h-8 bg-bg-alt rounded-lg animate-pulse" />
                       ) : (
                         <div className="text-2xl font-bold text-text">{card.data?.length ?? 0}</div>
                       )}
                     </div>
-                    <div className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest">{card.label}</div>
+                    <div className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
+                      {card.label}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -624,7 +661,9 @@ const DashboardScreen = ({ user, onLogout, onReset }) => {
                       <div key={stage.label} className="flex items-center gap-2 md:gap-3">
                         <div className={`flex-1 rounded-xl border p-4 ${stage.color}`}>
                           <div className={`text-2xl font-bold ${stage.text} text-center`}>{stage.value}</div>
-                          <div className="text-[10px] font-bold text-text-secondary text-center mt-1">{stage.label}</div>
+                          <div className="text-[10px] font-bold text-text-secondary text-center mt-1">
+                            {stage.label}
+                          </div>
                           <div className="mt-3 h-1.5 bg-white/60 rounded-full overflow-hidden">
                             <div
                               className={`h-full rounded-full ${stage.bar} transition-all duration-700`}
@@ -916,7 +955,9 @@ const DashboardScreen = ({ user, onLogout, onReset }) => {
               <div className="flex items-center gap-4">
                 <div className="hidden md:flex items-center gap-2 bg-accent-light border border-accent px-4 py-2 rounded-xl">
                   <ShieldCheck className="w-4 h-4 text-accent" />
-                  <span className="text-[11px] font-semibold text-accent-hover uppercase tracking-tight">{user?.email}</span>
+                  <span className="text-[11px] font-semibold text-accent-hover uppercase tracking-tight">
+                    {user?.email}
+                  </span>
                 </div>
                 <button
                   onClick={() => syncMutation.mutate()}
@@ -1006,9 +1047,7 @@ const DashboardScreen = ({ user, onLogout, onReset }) => {
                           <td className="px-4 md:px-8 py-4 md:py-6 text-[11px] font-bold text-text-secondary hidden sm:table-cell">
                             {new Date(doc.receivedAt).toLocaleDateString()}
                           </td>
-                          <td className="px-4 md:px-8 py-4 md:py-6 font-bold text-text text-sm">
-                            R {doc.amount}
-                          </td>
+                          <td className="px-4 md:px-8 py-4 md:py-6 font-bold text-text text-sm">R {doc.amount}</td>
                           <td className="px-4 md:px-8 py-4 md:py-6 text-right">
                             <ExternalLink className="w-4 h-4 text-border opacity-0 group-hover:opacity-100 transition-all" />
                           </td>
@@ -1022,7 +1061,9 @@ const DashboardScreen = ({ user, onLogout, onReset }) => {
                         <Inbox className="w-6 h-6 text-text-secondary" />
                       </div>
                       <p className="text-sm font-bold text-text-secondary">No documents found</p>
-                      {filterQuery && <p className="text-xs text-text-secondary mt-1">Try adjusting your search query</p>}
+                      {filterQuery && (
+                        <p className="text-xs text-text-secondary mt-1">Try adjusting your search query</p>
+                      )}
                     </div>
                   )}
                 </div>
