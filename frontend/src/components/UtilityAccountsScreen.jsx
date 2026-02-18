@@ -135,9 +135,9 @@ const UtilityAccountsScreen = ({ user }) => {
           </div>
           <button
             onClick={openCreate}
-            className="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-accent-hover transition-colors whitespace-nowrap"
+            className="bg-accent text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap"
           >
-            <Plus className="w-4 h-4" /> Add Account
+            <Plus className="w-4 h-4" /> Add
           </button>
         </div>
       </header>
@@ -160,9 +160,9 @@ const UtilityAccountsScreen = ({ user }) => {
         </div>
         <button
           onClick={openCreate}
-          className="w-full bg-accent text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-accent-hover transition-colors"
+          className="w-full bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-accent-hover transition-colors"
         >
-          <Plus className="w-3.5 h-3.5" /> Add Account
+          <Plus className="w-3.5 h-3.5" /> Add
         </button>
       </div>
 

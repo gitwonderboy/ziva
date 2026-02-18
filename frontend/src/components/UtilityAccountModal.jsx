@@ -17,20 +17,14 @@ const UTILITY_TYPE_OPTIONS = [
   { key: 'improvement_district', label: 'Improvement District' },
 ];
 
-const STATUS_OPTIONS = [
-  { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' },
-];
-
 const EMPTY_FORM = {
   providerId: '',
   accountNumber: '',
   sapAccountNumber: '',
   utilityTypes: [],
-  status: 'active',
 };
 
-const UtilityAccountModal = ({ isOpen, onClose, utilityAccount, propertyId, tenantId }) => {
+const UtilityAccountModal = ({ isOpen, onClose, utilityAccount, propertyId }) => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [successMsg, setSuccessMsg] = useState('');
@@ -56,7 +50,6 @@ const UtilityAccountModal = ({ isOpen, onClose, utilityAccount, propertyId, tena
           accountNumber: utilityAccount.accountNumber || '',
           sapAccountNumber: utilityAccount.sapAccountNumber || '',
           utilityTypes: utilityAccount.utilityTypes || [],
-          status: utilityAccount.status || 'active',
         });
       } else {
         setForm(EMPTY_FORM);
@@ -109,12 +102,10 @@ const UtilityAccountModal = ({ isOpen, onClose, utilityAccount, propertyId, tena
       accountNumber: form.accountNumber.trim(),
       sapAccountNumber: form.sapAccountNumber.trim(),
       utilityTypes: form.utilityTypes,
-      status: form.status,
     };
 
     if (!isEditing) {
       if (propertyId) payload.propertyId = propertyId;
-      if (tenantId) payload.tenantId = tenantId;
     }
 
     const onSuccess = () => {
@@ -258,21 +249,6 @@ const UtilityAccountModal = ({ isOpen, onClose, utilityAccount, propertyId, tena
             </div>
           </div>
 
-          {/* Status */}
-          <div>
-            <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
-              Status
-            </label>
-            <select
-              value={form.status}
-              onChange={(e) => handleChange('status', e.target.value)}
-              className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
-            >
-              {STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
         </div>
 
         {/* Footer */}

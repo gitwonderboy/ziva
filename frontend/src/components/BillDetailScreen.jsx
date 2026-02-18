@@ -249,7 +249,7 @@ const BillDetailScreen = ({ user }) => {
           </h2>
           <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-5">
             <InfoItem label="Property" value={propertyName} />
-            <InfoItem label="BP Number" value={bpNumber} mono />
+            <InfoItem label="Property ID" value={bpNumber} mono />
             <InfoItem label="Provider" value={providerName} />
             <InfoItem label="Account Number" value={accountNumber} mono />
           </dl>
