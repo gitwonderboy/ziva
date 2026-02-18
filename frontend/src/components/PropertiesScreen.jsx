@@ -12,7 +12,7 @@ import {
   AlertTriangle,
   ChevronRight,
 } from 'lucide-react';
-import { useProperties, useDeleteProperty } from '../firebase';
+import { useProperties, useDeleteProperty, useTenants } from '../firebase';
 import PropertyModal from './PropertyModal.jsx';
 
 const KPICard = ({ label, value, icon, color = 'bg-navy-50' }) => (
@@ -25,14 +25,17 @@ const KPICard = ({ label, value, icon, color = 'bg-navy-50' }) => (
   </div>
 );
 
-const StatusBadge = ({ status }) => {
-  const styles =
-    status === 'active'
-      ? 'bg-success-light text-success'
-      : 'bg-bg-alt text-text-secondary';
+const OccupancyBadge = ({ tenantName }) => {
+  if (tenantName) {
+    return (
+      <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide bg-success-light text-success max-w-[180px] truncate">
+        {tenantName}
+      </span>
+    );
+  }
   return (
-    <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${styles}`}>
-      {status || 'unknown'}
+    <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-warning-light text-warning-dark">
+      Vacant
     </span>
   );
 };
@@ -45,9 +48,21 @@ const PropertiesScreen = ({ user }) => {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const { data: properties, isLoading, isError } = useProperties();
+  const { data: tenants } = useTenants();
   const deleteMutation = useDeleteProperty();
 
   const resultList = properties || [];
+
+  // Build a map: propertyId → tenant name (first active tenant found)
+  const propertyTenantMap = useMemo(() => {
+    const m = new Map();
+    for (const t of (tenants || [])) {
+      if (t.propertyId && !m.has(t.propertyId)) {
+        m.set(t.propertyId, t.name);
+      }
+    }
+    return m;
+  }, [tenants]);
 
   const filtered = useMemo(() => {
     const q = searchInput.trim().toLowerCase();
@@ -61,9 +76,10 @@ const PropertiesScreen = ({ user }) => {
 
   const stats = useMemo(() => {
     const total = resultList.length;
-    const active = resultList.filter((p) => p.status === 'active').length;
-    return { total, active };
-  }, [resultList]);
+    const occupied = resultList.filter((p) => propertyTenantMap.has(p.id)).length;
+    const vacant = total - occupied;
+    return { total, occupied, vacant };
+  }, [resultList, propertyTenantMap]);
 
   const openCreate = () => {
     setEditingProperty(null);
@@ -100,7 +116,7 @@ const PropertiesScreen = ({ user }) => {
             <Search className="w-4 h-4 text-text-secondary absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search by BP number or name..."
+              placeholder="Search by Property ID or tenant name..."
               className="w-full bg-bg border-border border rounded-xl py-2 pl-12 pr-4 text-sm font-bold outline-none focus:border-accent transition-colors"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
@@ -108,9 +124,9 @@ const PropertiesScreen = ({ user }) => {
           </div>
           <button
             onClick={openCreate}
-            className="bg-accent text-white px-5 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-accent-hover transition-colors border border-transparent"
+            className="bg-accent text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap"
           >
-            <Plus className="w-4 h-4" /> Add Property
+            <Plus className="w-4 h-4" /> Add
           </button>
         </div>
       </header>
@@ -125,7 +141,7 @@ const PropertiesScreen = ({ user }) => {
           <Search className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search by BP number or name..."
+            placeholder="Search by Property ID or tenant name..."
             className="w-full bg-bg border-border border rounded-xl py-2 pl-10 pr-4 text-sm font-bold outline-none focus:border-accent transition-colors"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
@@ -133,9 +149,9 @@ const PropertiesScreen = ({ user }) => {
         </div>
         <button
           onClick={openCreate}
-          className="w-full bg-accent text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-accent-hover transition-colors"
+          className="w-full bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-accent-hover transition-colors"
         >
-          <Plus className="w-3.5 h-3.5" /> Add Property
+          <Plus className="w-3.5 h-3.5" /> Add
         </button>
       </div>
 
@@ -157,17 +173,23 @@ const PropertiesScreen = ({ user }) => {
         ) : (
           <div className="space-y-6">
             {/* KPI CARDS */}
-            <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 max-w-lg">
+            <div className="grid grid-cols-3 lg:grid-cols-3 gap-4 max-w-2xl">
               <KPICard
                 label="Total Properties"
                 value={stats.total}
                 icon={<Building2 className="w-5 h-5 text-navy" />}
               />
               <KPICard
-                label="Active"
-                value={stats.active}
+                label="Occupied"
+                value={stats.occupied}
                 icon={<Building2 className="w-5 h-5 text-success" />}
                 color="bg-success-light"
+              />
+              <KPICard
+                label="Vacant"
+                value={stats.vacant}
+                icon={<Building2 className="w-5 h-5 text-warning" />}
+                color="bg-warning-light"
               />
             </div>
 
@@ -186,16 +208,16 @@ const PropertiesScreen = ({ user }) => {
                   <thead>
                     <tr className="border-b border-border">
                       <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
-                        BP Number
+                        Property ID
                       </th>
                       <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
-                        Name
+                        Tenant Name
                       </th>
                       <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest hidden sm:table-cell">
-                        Company
+                        Property Owner
                       </th>
                       <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest hidden sm:table-cell">
-                        Status
+                        Occupancy
                       </th>
                       <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest w-24">
                         Actions
@@ -224,7 +246,7 @@ const PropertiesScreen = ({ user }) => {
                           {property.company || '\u2014'}
                         </td>
                         <td className="px-4 md:px-8 py-4 md:py-5 hidden sm:table-cell">
-                          <StatusBadge status={property.status} />
+                          <OccupancyBadge tenantName={propertyTenantMap.get(property.id)} />
                         </td>
                         <td className="px-4 md:px-8 py-4 md:py-5">
                           <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>

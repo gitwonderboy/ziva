@@ -9,23 +9,35 @@ const PROPERTY_TYPES = [
   { value: 'mixed-use', label: 'Mixed-Use' },
 ];
 
-const STATUS_OPTIONS = [
-  { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' },
+const SA_PROVINCES = [
+  'Eastern Cape',
+  'Free State',
+  'Gauteng',
+  'KwaZulu-Natal',
+  'Limpopo',
+  'Mpumalanga',
+  'North West',
+  'Northern Cape',
+  'Western Cape',
 ];
 
 const EMPTY_FORM = {
   bpNumber: '',
   name: '',
-  physicalAddress: '',
+  company: '',
+  description: '',
+  streetAddress: '',
+  suburb: '',
+  city: '',
+  province: '',
+  postalCode: '',
   gla: '',
   propertyType: 'office',
-  status: 'active',
 };
 
 const REQUIRED_FIELDS = [
-  { key: 'bpNumber', label: 'BP Number' },
-  { key: 'name', label: 'Name' },
+  { key: 'bpNumber', label: 'Property ID' },
+  { key: 'name', label: 'Tenant Name' },
 ];
 
 const PropertyModal = ({ isOpen, onClose, property }) => {
@@ -50,10 +62,15 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
         setForm({
           bpNumber: property.bpNumber || '',
           name: property.name || '',
-          physicalAddress: property.physicalAddress || '',
+          company: property.company || '',
+          description: property.description || '',
+          streetAddress: property.streetAddress || '',
+          suburb: property.suburb || '',
+          city: property.city || '',
+          province: property.province || '',
+          postalCode: property.postalCode || '',
           gla: property.gla != null ? String(property.gla) : '',
           propertyType: property.propertyType || 'office',
-          status: property.status || 'active',
         });
       } else {
         setForm(EMPTY_FORM);
@@ -91,10 +108,15 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
     const payload = {
       bpNumber: form.bpNumber.trim(),
       name: form.name.trim(),
-      physicalAddress: form.physicalAddress.trim(),
+      company: form.company.trim(),
+      description: form.description.trim(),
+      streetAddress: form.streetAddress.trim(),
+      suburb: form.suburb.trim(),
+      city: form.city.trim(),
+      province: form.province,
+      postalCode: form.postalCode.trim(),
       gla: form.gla ? Number(form.gla) : null,
       propertyType: form.propertyType,
-      status: form.status,
     };
 
     const onSuccess = () => {
@@ -146,10 +168,10 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
             </div>
           )}
 
-          {/* BP Number */}
+          {/* Property ID */}
           <div>
             <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
-              BP Number <span className="text-error">*</span>
+              Property ID <span className="text-error">*</span>
             </label>
             <input
               type="text"
@@ -164,10 +186,10 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
             )}
           </div>
 
-          {/* Name */}
+          {/* Tenant Name */}
           <div>
             <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
-              Name <span className="text-error">*</span>
+              Tenant Name <span className="text-error">*</span>
             </label>
             <input
               type="text"
@@ -182,16 +204,79 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
             )}
           </div>
 
-          {/* Physical Address */}
+          {/* Property Owner */}
           <div>
             <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
+              Property Owner
+            </label>
+            <input
+              type="text"
+              value={form.company}
+              onChange={(e) => handleChange('company', e.target.value)}
+              className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
+            />
+          </div>
+
+          {/* Property Description */}
+          <div>
+            <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
+              Property Description
+            </label>
+            <textarea
+              value={form.description}
+              onChange={(e) => handleChange('description', e.target.value)}
+              rows={3}
+              placeholder="Additional details about this property..."
+              className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent resize-none"
+            />
+          </div>
+
+          {/* Physical Address */}
+          <div className="space-y-3">
+            <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
               Physical Address
             </label>
             <input
               type="text"
-              value={form.physicalAddress}
-              onChange={(e) => handleChange('physicalAddress', e.target.value)}
+              value={form.streetAddress}
+              onChange={(e) => handleChange('streetAddress', e.target.value)}
+              placeholder="Street Address"
               className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
+            />
+            <input
+              type="text"
+              value={form.suburb}
+              onChange={(e) => handleChange('suburb', e.target.value)}
+              placeholder="Suburb"
+              className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="text"
+                value={form.city}
+                onChange={(e) => handleChange('city', e.target.value)}
+                placeholder="City"
+                className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
+              />
+              <select
+                value={form.province}
+                onChange={(e) => handleChange('province', e.target.value)}
+                className={`w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white focus:border-accent ${
+                  form.province ? 'text-text' : 'text-text-secondary'
+                }`}
+              >
+                <option value="">Province</option>
+                {SA_PROVINCES.map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            </div>
+            <input
+              type="text"
+              value={form.postalCode}
+              onChange={(e) => handleChange('postalCode', e.target.value)}
+              placeholder="Postal Code"
+              className="w-44 border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
             />
           </div>
 
@@ -225,21 +310,6 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
             </div>
           </div>
 
-          {/* Status */}
-          <div>
-            <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
-              Status
-            </label>
-            <select
-              value={form.status}
-              onChange={(e) => handleChange('status', e.target.value)}
-              className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
-            >
-              {STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
         </div>
 
         {/* Footer */}

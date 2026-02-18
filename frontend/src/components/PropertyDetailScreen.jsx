@@ -14,7 +14,7 @@ import {
   Plus,
   AlertTriangle,
 } from 'lucide-react';
-import { useProperty, useUtilityAccountsByProperty, useDeleteUtilityAccount } from '../firebase';
+import { useProperty, useUtilityAccountsByProperty, useDeleteUtilityAccount, useTenants } from '../firebase';
 import PropertyModal from './PropertyModal.jsx';
 import UtilityAccountModal from './UtilityAccountModal.jsx';
 
@@ -49,14 +49,17 @@ const PROPERTY_TYPE_LABELS = {
   'mixed-use': 'Mixed-Use',
 };
 
-const StatusBadge = ({ status }) => {
-  const styles =
-    status === 'active'
-      ? 'bg-success-light text-success'
-      : 'bg-bg-alt text-text-secondary';
+const OccupancyBadge = ({ tenantName }) => {
+  if (tenantName) {
+    return (
+      <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide bg-success-light text-success">
+        {tenantName}
+      </span>
+    );
+  }
   return (
-    <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${styles}`}>
-      {status || 'unknown'}
+    <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-warning-light text-warning-dark">
+      Vacant
     </span>
   );
 };
@@ -81,9 +84,16 @@ const PropertyDetailScreen = ({ user }) => {
 
   const { data: property, isLoading, isError } = useProperty(id);
   const { data: accounts, isLoading: accountsLoading } = useUtilityAccountsByProperty(id);
+  const { data: tenants } = useTenants();
   const deleteAccountMutation = useDeleteUtilityAccount();
 
   const accountList = accounts || [];
+
+  // Find the tenant assigned to this property
+  const assignedTenant = useMemo(() => {
+    if (!tenants) return null;
+    return tenants.find((t) => t.propertyId === id) || null;
+  }, [tenants, id]);
 
   const openCreateAccount = () => {
     setEditingAccount(null);
@@ -208,10 +218,17 @@ const PropertyDetailScreen = ({ user }) => {
             Property Details
           </h2>
           <dl className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-5">
-            <InfoItem label="BP Number" value={property.bpNumber} />
-            <InfoItem label="Name" value={property.name} />
-            <InfoItem label="Physical Address" value={property.physicalAddress} />
-            <InfoItem label="Company" value={property.company} />
+            <InfoItem label="Property ID" value={property.bpNumber} />
+            <InfoItem label="Tenant Name" value={property.name} />
+            <InfoItem
+              label="Physical Address"
+              value={
+                [property.streetAddress, property.suburb, property.city, property.province, property.postalCode]
+                  .filter(Boolean)
+                  .join(', ') || null
+              }
+            />
+            <InfoItem label="Property Owner" value={property.company} />
             <InfoItem
               label="GLA (m²)"
               value={property.gla != null ? Number(property.gla).toLocaleString() : null}
@@ -222,13 +239,23 @@ const PropertyDetailScreen = ({ user }) => {
             />
             <div>
               <dt className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1">
-                Status
+                Occupancy
               </dt>
               <dd>
-                <StatusBadge status={property.status} />
+                <OccupancyBadge tenantName={assignedTenant?.name} />
               </dd>
             </div>
           </dl>
+          {property.description && (
+            <div className="mt-6 pt-5 border-t border-border">
+              <dt className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
+                Property Description
+              </dt>
+              <dd className="text-sm font-bold text-text leading-relaxed whitespace-pre-line">
+                {property.description}
+              </dd>
+            </div>
+          )}
         </div>
 
         {/* UTILITY ACCOUNTS SECTION */}
@@ -260,7 +287,7 @@ const PropertyDetailScreen = ({ user }) => {
                 onClick={openCreateAccount}
                 className="bg-accent text-white px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 hover:bg-accent-hover transition-colors shrink-0"
               >
-                <Plus className="w-3.5 h-3.5" /> Add Account
+                <Plus className="w-3.5 h-3.5" /> Add
               </button>
             </div>
           </div>
