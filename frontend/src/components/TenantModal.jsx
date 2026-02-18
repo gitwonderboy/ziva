@@ -1,11 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { X, Loader2 } from 'lucide-react';
-import { useCreateTenant, useUpdateTenant } from '../firebase';
-
-const STATUS_OPTIONS = [
-  { value: 'active', label: 'Active' },
-  { value: 'inactive', label: 'Inactive' },
-];
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Loader2, Upload, FileText, Trash2 } from 'lucide-react';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { useCreateTenant, useUpdateTenant, useProperties, storage } from '../firebase';
 
 const EMPTY_FORM = {
   name: '',
@@ -14,28 +10,49 @@ const EMPTY_FORM = {
   vatNumber: '',
   contactEmail: '',
   contactPhone: '',
-  status: 'active',
+  workEmail: '',
+  workPhone: '',
+  nextOfKinName: '',
+  nextOfKinPhone: '',
+  nextOfKinEmail: '',
+  nextOfKinRelationship: '',
+  propertyId: '',
 };
 
 const TenantModal = ({ isOpen, onClose, tenant }) => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [successMsg, setSuccessMsg] = useState('');
+  const [leaseFile, setLeaseFile] = useState(null);
+  const [existingLease, setExistingLease] = useState(null);
+  const [removeLease, setRemoveLease] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const createMutation = useCreateTenant();
   const updateMutation = useUpdateTenant();
+  const { data: properties } = useProperties();
+  const propertyList = properties || [];
 
   const isEditing = !!tenant;
-  const isSaving = createMutation.isPending || updateMutation.isPending;
+  const isSaving = createMutation.isPending || updateMutation.isPending || uploading;
 
   useEffect(() => {
     if (isOpen) {
       setErrors({});
       setSuccessMsg('');
+      setLeaseFile(null);
+      setRemoveLease(false);
+      setUploading(false);
       createMutation.reset();
       updateMutation.reset();
 
       if (tenant) {
+        setExistingLease(
+          tenant.leaseAgreementUrl
+            ? { url: tenant.leaseAgreementUrl, name: tenant.leaseAgreementName || 'Lease Agreement' }
+            : null,
+        );
         setForm({
           name: tenant.name || '',
           tradingName: tenant.tradingName || '',
@@ -43,9 +60,16 @@ const TenantModal = ({ isOpen, onClose, tenant }) => {
           vatNumber: tenant.vatNumber || '',
           contactEmail: tenant.contactEmail || '',
           contactPhone: tenant.contactPhone || '',
-          status: tenant.status || 'active',
+          workEmail: tenant.workEmail || '',
+          workPhone: tenant.workPhone || '',
+          nextOfKinName: tenant.nextOfKinName || '',
+          nextOfKinPhone: tenant.nextOfKinPhone || '',
+          nextOfKinEmail: tenant.nextOfKinEmail || '',
+          nextOfKinRelationship: tenant.nextOfKinRelationship || '',
+          propertyId: tenant.propertyId || '',
         });
       } else {
+        setExistingLease(null);
         setForm(EMPTY_FORM);
       }
     }
@@ -67,13 +91,13 @@ const TenantModal = ({ isOpen, onClose, tenant }) => {
   const validate = () => {
     const newErrors = {};
     if (!form.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = 'Tenant Name is required';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validate()) return;
 
     const payload = {
@@ -83,8 +107,46 @@ const TenantModal = ({ isOpen, onClose, tenant }) => {
       vatNumber: form.vatNumber.trim(),
       contactEmail: form.contactEmail.trim(),
       contactPhone: form.contactPhone.trim(),
-      status: form.status,
+      workEmail: form.workEmail.trim(),
+      workPhone: form.workPhone.trim(),
+      nextOfKinName: form.nextOfKinName.trim(),
+      nextOfKinPhone: form.nextOfKinPhone.trim(),
+      nextOfKinEmail: form.nextOfKinEmail.trim(),
+      nextOfKinRelationship: form.nextOfKinRelationship.trim(),
+      propertyId: form.propertyId || null,
     };
+
+    try {
+      setUploading(true);
+
+      // Upload new lease file
+      if (leaseFile) {
+        const timestamp = Date.now();
+        const storagePath = `leases/${form.name.trim().replace(/\s+/g, '_')}_${timestamp}_${leaseFile.name}`;
+        const storageRef = ref(storage, storagePath);
+        await uploadBytes(storageRef, leaseFile);
+        const downloadUrl = await getDownloadURL(storageRef);
+        payload.leaseAgreementUrl = downloadUrl;
+        payload.leaseAgreementName = leaseFile.name;
+        payload.leaseAgreementPath = storagePath;
+      } else if (removeLease) {
+        // Remove existing lease
+        if (tenant?.leaseAgreementPath) {
+          try {
+            await deleteObject(ref(storage, tenant.leaseAgreementPath));
+          } catch (_) { /* file may already be gone */ }
+        }
+        payload.leaseAgreementUrl = null;
+        payload.leaseAgreementName = null;
+        payload.leaseAgreementPath = null;
+      }
+
+      setUploading(false);
+    } catch (err) {
+      setUploading(false);
+      setErrors({ _form: 'Failed to upload lease agreement' });
+      return;
+    }
 
     const onSuccess = () => {
       setSuccessMsg(isEditing ? 'Tenant updated successfully' : 'Tenant created successfully');
@@ -133,10 +195,10 @@ const TenantModal = ({ isOpen, onClose, tenant }) => {
             </div>
           )}
 
-          {/* Name */}
+          {/* Tenant Name */}
           <div>
             <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
-              Name <span className="text-error">*</span>
+              Tenant Name <span className="text-error">*</span>
             </label>
             <input
               type="text"
@@ -216,21 +278,182 @@ const TenantModal = ({ isOpen, onClose, tenant }) => {
             </div>
           </div>
 
-          {/* Status */}
+          {/* Work Contact */}
+          <div className="pt-2">
+            <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-3">
+              Work Contact
+            </label>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
+                  Work Email
+                </label>
+                <input
+                  type="email"
+                  value={form.workEmail}
+                  onChange={(e) => handleChange('workEmail', e.target.value)}
+                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
+                  Work Phone
+                </label>
+                <input
+                  type="tel"
+                  value={form.workPhone}
+                  onChange={(e) => handleChange('workPhone', e.target.value)}
+                  className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Next of Kin */}
+          <div className="pt-2">
+            <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-3">
+              Next of Kin
+            </label>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    value={form.nextOfKinName}
+                    onChange={(e) => handleChange('nextOfKinName', e.target.value)}
+                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
+                    Relationship
+                  </label>
+                  <input
+                    type="text"
+                    value={form.nextOfKinRelationship}
+                    onChange={(e) => handleChange('nextOfKinRelationship', e.target.value)}
+                    placeholder="e.g. Spouse, Parent, Sibling"
+                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
+                    Phone
+                  </label>
+                  <input
+                    type="tel"
+                    value={form.nextOfKinPhone}
+                    onChange={(e) => handleChange('nextOfKinPhone', e.target.value)}
+                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    value={form.nextOfKinEmail}
+                    onChange={(e) => handleChange('nextOfKinEmail', e.target.value)}
+                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Lease Agreement */}
+          <div className="pt-2">
+            <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-3">
+              Lease Agreement
+            </label>
+            {/* Existing file */}
+            {existingLease && !removeLease && !leaseFile && (
+              <div className="flex items-center gap-3 p-3 bg-bg rounded-xl border border-border">
+                <FileText className="w-5 h-5 text-accent shrink-0" />
+                <a
+                  href={existingLease.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-bold text-accent hover:underline truncate flex-1"
+                >
+                  {existingLease.name}
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setRemoveLease(true)}
+                  className="p-1.5 hover:bg-error-light rounded-lg transition-colors shrink-0"
+                  title="Remove"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-error" />
+                </button>
+              </div>
+            )}
+            {/* New file selected */}
+            {leaseFile && (
+              <div className="flex items-center gap-3 p-3 bg-accent-light/30 rounded-xl border border-accent/30">
+                <FileText className="w-5 h-5 text-accent shrink-0" />
+                <span className="text-sm font-bold text-text truncate flex-1">{leaseFile.name}</span>
+                <button
+                  type="button"
+                  onClick={() => { setLeaseFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+                  className="p-1.5 hover:bg-error-light rounded-lg transition-colors shrink-0"
+                  title="Remove"
+                >
+                  <X className="w-3.5 h-3.5 text-error" />
+                </button>
+              </div>
+            )}
+            {/* Upload button */}
+            {!leaseFile && (!existingLease || removeLease) && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full flex items-center justify-center gap-2 p-4 border-2 border-dashed border-border rounded-xl text-sm font-bold text-text-secondary hover:border-accent hover:text-accent transition-colors"
+              >
+                <Upload className="w-4 h-4" />
+                Upload Lease Agreement
+              </button>
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.doc,.docx"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setLeaseFile(file);
+                  setRemoveLease(false);
+                }
+              }}
+            />
+            <p className="text-[10px] text-text-secondary mt-1.5">Accepted: PDF, DOC, DOCX</p>
+          </div>
+
+          {/* Assigned Property */}
           <div>
             <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
-              Status
+              Assigned Property
             </label>
             <select
-              value={form.status}
-              onChange={(e) => handleChange('status', e.target.value)}
+              value={form.propertyId}
+              onChange={(e) => handleChange('propertyId', e.target.value)}
               className="w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
             >
-              {STATUS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              <option value="">None (Unassigned)</option>
+              {propertyList.map((p) => (
+                <option key={p.id} value={p.id}>{p.bpNumber || p.name}</option>
               ))}
             </select>
           </div>
+
+
         </div>
 
         {/* Footer */}

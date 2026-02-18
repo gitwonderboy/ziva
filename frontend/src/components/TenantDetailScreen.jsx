@@ -7,26 +7,23 @@ import {
   Loader2,
   X,
   Pencil,
-  Trash2,
   Inbox,
   Zap,
   Search,
-  Plus,
-  AlertTriangle,
+  Building2,
   HandCoins,
   Send,
   Receipt,
+  FileText,
 } from 'lucide-react';
 import {
   useTenant,
-  useUtilityAccountsByTenant,
-  useDeleteUtilityAccount,
+  useUtilityAccountsByProperty,
   useAllocationsByTenant,
   useBills,
   useProperties,
 } from '../firebase';
 import TenantModal from './TenantModal.jsx';
-import UtilityAccountModal from './UtilityAccountModal.jsx';
 
 const UTILITY_LABELS = {
   rates: 'Rates',
@@ -52,14 +49,17 @@ const UTILITY_COLORS = {
   improvement_district: 'bg-bg-alt text-text-secondary',
 };
 
-const StatusBadge = ({ status }) => {
-  const styles =
-    status === 'active'
-      ? 'bg-success-light text-success'
-      : 'bg-bg-alt text-text-secondary';
+const PropertyBadge = ({ propertyName }) => {
+  if (propertyName) {
+    return (
+      <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide bg-success-light text-success">
+        {propertyName}
+      </span>
+    );
+  }
   return (
-    <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${styles}`}>
-      {status || 'unknown'}
+    <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-warning-light text-warning-dark">
+      Unassigned
     </span>
   );
 };
@@ -97,18 +97,16 @@ const TenantDetailScreen = ({ user }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
-  const [accountModalOpen, setAccountModalOpen] = useState(false);
-  const [editingAccount, setEditingAccount] = useState(null);
-  const [deleteAccountConfirm, setDeleteAccountConfirm] = useState(null);
   const [accountSearch, setAccountSearch] = useState('');
 
   const { data: tenant, isLoading, isError } = useTenant(id);
-  const { data: accounts, isLoading: accountsLoading } = useUtilityAccountsByTenant(id);
   const { data: allocations, isLoading: allocationsLoading } = useAllocationsByTenant(id);
   const { data: bills } = useBills();
   const { data: properties } = useProperties();
-  const deleteAccountMutation = useDeleteUtilityAccount();
 
+  // Utility accounts belong to the property, not the tenant.
+  // Fetch accounts via the tenant's propertyId.
+  const { data: accounts, isLoading: accountsLoading } = useUtilityAccountsByProperty(tenant?.propertyId);
   const accountList = accounts || [];
   const allocationList = allocations || [];
 
@@ -136,28 +134,6 @@ const TenantDetailScreen = ({ user }) => {
     () => allocationList.filter((a) => !a.status || a.status === 'pending'),
     [allocationList],
   );
-
-  const openCreateAccount = () => {
-    setEditingAccount(null);
-    setAccountModalOpen(true);
-  };
-
-  const openEditAccount = (account) => {
-    setEditingAccount(account);
-    setAccountModalOpen(true);
-  };
-
-  const closeAccountModal = () => {
-    setAccountModalOpen(false);
-    setEditingAccount(null);
-  };
-
-  const handleDeleteAccount = () => {
-    if (!deleteAccountConfirm) return;
-    deleteAccountMutation.mutate(deleteAccountConfirm.id, {
-      onSuccess: () => setDeleteAccountConfirm(null),
-    });
-  };
 
   const filteredAccounts = useMemo(() => {
     const q = accountSearch.trim().toLowerCase();
@@ -260,30 +236,63 @@ const TenantDetailScreen = ({ user }) => {
             Tenant Details
           </h2>
           <dl className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-5">
-            <InfoItem label="Name" value={tenant.name} />
+            <InfoItem label="Tenant Name" value={tenant.name} />
             <InfoItem label="Trading Name" value={tenant.tradingName} />
             <InfoItem label="Registration Number" value={tenant.registrationNumber} />
             <InfoItem label="VAT Number" value={tenant.vatNumber} />
             <InfoItem label="Contact Email" value={tenant.contactEmail} />
             <InfoItem label="Contact Phone" value={tenant.contactPhone} />
+            <InfoItem label="Work Email" value={tenant.workEmail} />
+            <InfoItem label="Work Phone" value={tenant.workPhone} />
             <div>
               <dt className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1">
-                Status
+                Property
               </dt>
               <dd>
-                <StatusBadge status={tenant.status} />
+                <PropertyBadge propertyName={tenant.propertyId ? (propertyMap.get(tenant.propertyId)?.bpNumber || propertyMap.get(tenant.propertyId)?.name) : null} />
               </dd>
             </div>
           </dl>
+          {(tenant.nextOfKinName || tenant.nextOfKinPhone || tenant.nextOfKinEmail) && (
+            <div className="mt-6 pt-5 border-t border-border">
+              <h3 className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-4">
+                Next of Kin
+              </h3>
+              <dl className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-5">
+                <InfoItem label="Full Name" value={tenant.nextOfKinName} />
+                <InfoItem label="Relationship" value={tenant.nextOfKinRelationship} />
+                <InfoItem label="Phone" value={tenant.nextOfKinPhone} />
+                <InfoItem label="Email" value={tenant.nextOfKinEmail} />
+              </dl>
+            </div>
+          )}
+          {tenant.leaseAgreementUrl && (
+            <div className="mt-6 pt-5 border-t border-border">
+              <h3 className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-3">
+                Lease Agreement
+              </h3>
+              <a
+                href={tenant.leaseAgreementUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2.5 px-4 py-3 bg-bg rounded-xl border border-border hover:border-accent transition-colors"
+              >
+                <FileText className="w-5 h-5 text-accent shrink-0" />
+                <span className="text-sm font-bold text-accent hover:underline">
+                  {tenant.leaseAgreementName || 'View Lease Agreement'}
+                </span>
+              </a>
+            </div>
+          )}
         </div>
 
-        {/* UTILITY ACCOUNTS SECTION */}
+        {/* UTILITY ACCOUNTS SECTION (read-only — accounts belong to the property) */}
         <div className="bg-white rounded-3xl border border-border shadow-card overflow-hidden">
           <div className="px-4 md:px-8 py-5 border-b border-border bg-bg/30 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-accent" />
               <span className="text-sm font-bold text-text">
-                Utility Accounts
+                Property Utility Accounts
               </span>
               <span className="text-sm font-bold text-text-secondary">
                 ({accountList.length})
@@ -302,12 +311,14 @@ const TenantDetailScreen = ({ user }) => {
                   />
                 </div>
               )}
-              <button
-                onClick={openCreateAccount}
-                className="bg-accent text-white px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 hover:bg-accent-hover transition-colors shrink-0"
-              >
-                <Plus className="w-3.5 h-3.5" /> Add Account
-              </button>
+              {tenant?.propertyId && (
+                <button
+                  onClick={() => navigate(`/properties/${tenant.propertyId}`)}
+                  className="bg-bg border border-border text-text px-3.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 hover:border-accent hover:text-accent transition-colors shrink-0"
+                >
+                  <Building2 className="w-3.5 h-3.5" /> View Property
+                </button>
+              )}
             </div>
           </div>
 
@@ -331,13 +342,10 @@ const TenantDetailScreen = ({ user }) => {
                       SAP Account
                     </th>
                     <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest hidden lg:table-cell">
-                      BP Number
+                      Property ID
                     </th>
                     <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
                       Utility Types
-                    </th>
-                    <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest w-24">
-                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -373,24 +381,6 @@ const TenantDetailScreen = ({ user }) => {
                           )}
                         </div>
                       </td>
-                      <td className="px-4 md:px-8 py-4">
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => openEditAccount(account)}
-                            className="p-1.5 hover:bg-bg-alt rounded-lg transition-colors"
-                            title="Edit"
-                          >
-                            <Pencil className="w-3.5 h-3.5 text-text-secondary" />
-                          </button>
-                          <button
-                            onClick={() => setDeleteAccountConfirm(account)}
-                            className="p-1.5 hover:bg-error-light rounded-lg transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-error" />
-                          </button>
-                        </div>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -404,8 +394,13 @@ const TenantDetailScreen = ({ user }) => {
               <p className="text-sm font-bold text-text-secondary">
                 {accountSearch.trim()
                   ? 'No accounts match your search'
-                  : 'No utility accounts for this tenant'}
+                  : tenant?.propertyId
+                    ? 'No utility accounts on the assigned property'
+                    : 'Tenant is not assigned to a property'}
               </p>
+              {!tenant?.propertyId && (
+                <p className="text-xs text-text-secondary mt-1">Assign this tenant to a property to see its utility accounts</p>
+              )}
             </div>
           )}
         </div>
@@ -538,56 +533,6 @@ const TenantDetailScreen = ({ user }) => {
         onClose={() => setModalOpen(false)}
         tenant={tenant}
       />
-
-      {/* UTILITY ACCOUNT MODAL */}
-      <UtilityAccountModal
-        isOpen={accountModalOpen}
-        onClose={closeAccountModal}
-        utilityAccount={editingAccount}
-        propertyId={editingAccount?.propertyId || tenant?.propertyId || null}
-        tenantId={id}
-      />
-
-      {/* DELETE ACCOUNT CONFIRMATION */}
-      {deleteAccountConfirm && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center">
-          <div className="absolute inset-0 bg-navy/40 backdrop-blur-sm" onClick={() => setDeleteAccountConfirm(null)} />
-          <div className="relative bg-white rounded-2xl shadow-dropdown p-6 max-w-sm w-full mx-4 animate-fade-in-scale">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-error-light flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-error" />
-              </div>
-              <div>
-                <h3 className="font-bold text-text">Delete utility account?</h3>
-                <p className="text-xs text-text-secondary">This action cannot be undone</p>
-              </div>
-            </div>
-            <p className="text-sm text-text-secondary mb-6">
-              Are you sure you want to delete account{' '}
-              <span className="font-bold text-text">
-                {deleteAccountConfirm.accountNumber || 'this account'}
-              </span>
-              ?
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteAccountConfirm(null)}
-                className="flex-1 bg-white border border-border text-text py-2.5 rounded-xl font-bold text-sm hover:bg-bg transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleDeleteAccount}
-                disabled={deleteAccountMutation.isPending}
-                className="flex-1 bg-error text-white py-2.5 rounded-xl font-bold text-sm hover:bg-error/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-              >
-                {deleteAccountMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                {deleteAccountMutation.isPending ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

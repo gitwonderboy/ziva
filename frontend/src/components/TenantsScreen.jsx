@@ -12,7 +12,7 @@ import {
   AlertTriangle,
   ChevronRight,
 } from 'lucide-react';
-import { useTenants, useDeleteTenant } from '../firebase';
+import { useTenants, useDeleteTenant, useProperties } from '../firebase';
 import TenantModal from './TenantModal.jsx';
 
 const KPICard = ({ label, value, icon, color = 'bg-navy-50' }) => (
@@ -25,14 +25,17 @@ const KPICard = ({ label, value, icon, color = 'bg-navy-50' }) => (
   </div>
 );
 
-const StatusBadge = ({ status }) => {
-  const styles =
-    status === 'active'
-      ? 'bg-success-light text-success'
-      : 'bg-bg-alt text-text-secondary';
+const PropertyBadge = ({ propertyName }) => {
+  if (propertyName) {
+    return (
+      <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide bg-success-light text-success max-w-[200px] truncate">
+        {propertyName}
+      </span>
+    );
+  }
   return (
-    <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${styles}`}>
-      {status || 'unknown'}
+    <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-warning-light text-warning-dark">
+      Unassigned
     </span>
   );
 };
@@ -45,9 +48,19 @@ const TenantsScreen = ({ user }) => {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   const { data: tenants, isLoading, isError } = useTenants();
+  const { data: properties } = useProperties();
   const deleteMutation = useDeleteTenant();
 
   const resultList = tenants || [];
+
+  // Build a map: propertyId → property name/ID for display
+  const propertyMap = useMemo(() => {
+    const m = new Map();
+    for (const p of (properties || [])) {
+      m.set(p.id, p.bpNumber || p.name || 'Unknown Property');
+    }
+    return m;
+  }, [properties]);
 
   const filtered = useMemo(() => {
     const q = searchInput.trim().toLowerCase();
@@ -61,8 +74,9 @@ const TenantsScreen = ({ user }) => {
 
   const stats = useMemo(() => {
     const total = resultList.length;
-    const active = resultList.filter((t) => t.status === 'active').length;
-    return { total, active };
+    const assigned = resultList.filter((t) => t.propertyId).length;
+    const unassigned = total - assigned;
+    return { total, assigned, unassigned };
   }, [resultList]);
 
   const openCreate = () => {
@@ -108,9 +122,9 @@ const TenantsScreen = ({ user }) => {
           </div>
           <button
             onClick={openCreate}
-            className="bg-accent text-white px-5 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-accent-hover transition-colors border border-transparent"
+            className="bg-accent text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap"
           >
-            <Plus className="w-4 h-4" /> Add Tenant
+            <Plus className="w-4 h-4" /> Add
           </button>
         </div>
       </header>
@@ -133,9 +147,9 @@ const TenantsScreen = ({ user }) => {
         </div>
         <button
           onClick={openCreate}
-          className="w-full bg-accent text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-accent-hover transition-colors"
+          className="w-full bg-accent text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-accent-hover transition-colors"
         >
-          <Plus className="w-3.5 h-3.5" /> Add Tenant
+          <Plus className="w-3.5 h-3.5" /> Add
         </button>
       </div>
 
@@ -157,17 +171,23 @@ const TenantsScreen = ({ user }) => {
         ) : (
           <div className="space-y-6">
             {/* KPI CARDS */}
-            <div className="grid grid-cols-2 lg:grid-cols-2 gap-4 max-w-lg">
+            <div className="grid grid-cols-3 lg:grid-cols-3 gap-4 max-w-2xl">
               <KPICard
                 label="Total Tenants"
                 value={stats.total}
                 icon={<Users className="w-5 h-5 text-navy" />}
               />
               <KPICard
-                label="Active"
-                value={stats.active}
+                label="Assigned"
+                value={stats.assigned}
                 icon={<Users className="w-5 h-5 text-success" />}
                 color="bg-success-light"
+              />
+              <KPICard
+                label="Unassigned"
+                value={stats.unassigned}
+                icon={<Users className="w-5 h-5 text-warning" />}
+                color="bg-warning-light"
               />
             </div>
 
@@ -186,10 +206,10 @@ const TenantsScreen = ({ user }) => {
                   <thead>
                     <tr className="border-b border-border">
                       <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
-                        Name
+                        Tenant Name
                       </th>
                       <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
-                        Status
+                        Property
                       </th>
                       <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest w-24">
                         Actions
@@ -214,7 +234,7 @@ const TenantsScreen = ({ user }) => {
                           </div>
                         </td>
                         <td className="px-4 md:px-8 py-4 md:py-5">
-                          <StatusBadge status={tenant.status} />
+                          <PropertyBadge propertyName={tenant.propertyId ? propertyMap.get(tenant.propertyId) : null} />
                         </td>
                         <td className="px-4 md:px-8 py-4 md:py-5">
                           <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
