@@ -20,6 +20,8 @@ import {
   getAllExceptions, getExceptionById, createException, updateException, deleteException,
   // Invoices
   getAllInvoices, getInvoiceById, createInvoice, updateInvoice, deleteInvoice,
+  // Utilities tree
+  getUtilitiesTree,
   // Query functions
   getPropertiesByPortfolio, getTenantsByProperty,
   getBillsByProperty, getBillsByUtilityAccount, getBillsByStatus,
@@ -282,3 +284,14 @@ const invoiceMutations = makeCrudHooks('invoices', createInvoice, updateInvoice,
 export const useCreateInvoice = invoiceMutations.useCreate;
 export const useUpdateInvoice = invoiceMutations.useUpdate;
 export const useDeleteInvoice = invoiceMutations.useDelete;
+
+// ---------------------------------------------------------------------------
+// Utilities Tree (read-only reference data)
+// ---------------------------------------------------------------------------
+
+export const useUtilitiesTree = () =>
+  useQuery({
+    queryKey: ['utilitiesTree'],
+    queryFn: getUtilitiesTree,
+    staleTime: 10 * 60 * 1000,
+  });

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { X, Loader2, MapPin, Search } from 'lucide-react';
-import { useCreateProperty, useUpdateProperty, useTenants } from '../firebase';
+import { useCreateProperty, useUpdateProperty, useTenants, useUtilitiesTree } from '../firebase';
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -72,6 +72,7 @@ const EMPTY_FORM = {
   postalCode: '',
   gla: '',
   propertyType: 'office',
+  utilities: [],
 };
 
 const REQUIRED_FIELDS = [
@@ -87,6 +88,12 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
   const createMutation = useCreateProperty();
   const updateMutation = useUpdateProperty();
   const { data: tenants } = useTenants();
+
+  const { data: utilitiesTree } = useUtilitiesTree();
+
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState('');
+  const [selectedProviderId, setSelectedProviderId] = useState('');
 
   const [addressQuery, setAddressQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -163,6 +170,9 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
       setAddressQuery('');
       setSuggestions([]);
       setShowSuggestions(false);
+      setSelectedCategoryId('');
+      setSelectedSubcategoryId('');
+      setSelectedProviderId('');
       createMutation.reset();
       updateMutation.reset();
 
@@ -180,6 +190,7 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
           postalCode: property.postalCode || '',
           gla: property.gla != null ? String(property.gla) : '',
           propertyType: property.propertyType || 'office',
+          utilities: property.utilities || [],
         });
       } else {
         setForm(EMPTY_FORM);
@@ -214,6 +225,56 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Utility picker helpers
+  const categories = utilitiesTree || [];
+  const selectedCategory = categories.find((c) => c.id === selectedCategoryId);
+  const subcategories = selectedCategory?.subcategories || [];
+  const selectedSubcategory = subcategories.find((s) => s.id === selectedSubcategoryId);
+  const providers = selectedSubcategory?.providers || [];
+
+  const handleCategoryChange = (catId) => {
+    setSelectedCategoryId(catId);
+    setSelectedSubcategoryId('');
+    setSelectedProviderId('');
+  };
+
+  const handleSubcategoryChange = (subId) => {
+    setSelectedSubcategoryId(subId);
+    setSelectedProviderId('');
+  };
+
+  const handleAddUtility = () => {
+    const provider = providers.find((p) => p.id === selectedProviderId);
+    if (!selectedCategory || !selectedSubcategory || !provider) return;
+
+    const already = form.utilities.some(
+      (u) => u.categoryId === selectedCategoryId && u.subcategoryId === selectedSubcategoryId && u.providerId === selectedProviderId,
+    );
+    if (already) return;
+
+    const entry = {
+      categoryId: selectedCategoryId,
+      categoryName: selectedCategory.name,
+      subcategoryId: selectedSubcategoryId,
+      subcategoryName: selectedSubcategory.name,
+      providerId: selectedProviderId,
+      providerName: provider.name,
+    };
+    handleChange('utilities', [...form.utilities, entry]);
+    setSelectedProviderId('');
+  };
+
+  const handleRemoveUtility = (idx) => {
+    handleChange('utilities', form.utilities.filter((_, i) => i !== idx));
+  };
+
+  // Group utilities by category for chip display
+  const utilitiesByCategory = form.utilities.reduce((acc, u, idx) => {
+    if (!acc[u.categoryName]) acc[u.categoryName] = [];
+    acc[u.categoryName].push({ ...u, _idx: idx });
+    return acc;
+  }, {});
+
   const handleSubmit = () => {
     if (!validate()) return;
 
@@ -230,6 +291,7 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
       postalCode: form.postalCode.trim(),
       gla: form.gla ? Number(form.gla) : null,
       propertyType: form.propertyType,
+      utilities: form.utilities,
     };
 
     const onSuccess = () => {
@@ -492,6 +554,99 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Utilities */}
+          <div>
+            <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
+              Utilities
+            </label>
+
+            {/* Cascading dropdowns */}
+            <div className="space-y-2">
+              <select
+                value={selectedCategoryId}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                className={`w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white focus:border-accent ${
+                  selectedCategoryId ? 'text-text' : 'text-text-secondary'
+                }`}
+              >
+                <option value="">Select category...</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+
+              {selectedCategoryId && (
+                <select
+                  value={selectedSubcategoryId}
+                  onChange={(e) => handleSubcategoryChange(e.target.value)}
+                  className={`w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white focus:border-accent ${
+                    selectedSubcategoryId ? 'text-text' : 'text-text-secondary'
+                  }`}
+                >
+                  <option value="">Select subcategory...</option>
+                  {subcategories.map((s) => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              )}
+
+              {selectedSubcategoryId && (
+                <select
+                  value={selectedProviderId}
+                  onChange={(e) => setSelectedProviderId(e.target.value)}
+                  className={`w-full border border-border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white focus:border-accent ${
+                    selectedProviderId ? 'text-text' : 'text-text-secondary'
+                  }`}
+                >
+                  <option value="">Select provider...</option>
+                  {providers.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              )}
+
+              {selectedProviderId && (
+                <button
+                  type="button"
+                  onClick={handleAddUtility}
+                  className="px-4 py-2 bg-accent text-white rounded-xl text-sm font-bold hover:bg-accent-hover transition-colors"
+                >
+                  Add Utility
+                </button>
+              )}
+            </div>
+
+            {/* Selected utilities chips grouped by category */}
+            {form.utilities.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {Object.entries(utilitiesByCategory).map(([catName, items]) => (
+                  <div key={catName}>
+                    <p className="text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1">
+                      {catName}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {items.map((u) => (
+                        <span
+                          key={u._idx}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-accent-light text-accent text-xs font-bold"
+                        >
+                          {u.subcategoryName} &middot; {u.providerName}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveUtility(u._idx)}
+                            className="hover:text-error transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
         </div>

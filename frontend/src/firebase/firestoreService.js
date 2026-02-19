@@ -122,6 +122,34 @@ export const updateInvoice = (id, data) => updateDocument('invoices', id, data);
 export const deleteInvoice = (id) => deleteDocument('invoices', id);
 
 // ---------------------------------------------------------------------------
+// Utilities tree (three-level subcollection hierarchy)
+// ---------------------------------------------------------------------------
+
+export async function getUtilitiesTree() {
+  const categoriesSnap = await getDocs(collection(db, 'utilities'));
+  const categories = await Promise.all(
+    categoriesSnap.docs.map(async (catDoc) => {
+      const cat = { id: catDoc.id, ...catDoc.data() };
+      const subcatsSnap = await getDocs(
+        collection(db, 'utilities', catDoc.id, 'subcategories'),
+      );
+      cat.subcategories = await Promise.all(
+        subcatsSnap.docs.map(async (subDoc) => {
+          const sub = { id: subDoc.id, ...subDoc.data() };
+          const providersSnap = await getDocs(
+            collection(db, 'utilities', catDoc.id, 'subcategories', subDoc.id, 'providers'),
+          );
+          sub.providers = providersSnap.docs.map((p) => ({ id: p.id, ...p.data() }));
+          return sub;
+        }),
+      );
+      return cat;
+    }),
+  );
+  return categories;
+}
+
+// ---------------------------------------------------------------------------
 // Query functions
 // ---------------------------------------------------------------------------
 
