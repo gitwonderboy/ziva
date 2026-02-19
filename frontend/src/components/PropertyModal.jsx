@@ -1,7 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { X, Loader2 } from 'lucide-react';
+import { X, Loader2, MapPin, Search } from 'lucide-react';
 import { useCreateProperty, useUpdateProperty, useTenants } from '../firebase';
+
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+
+// Places API (New) helpers
+const searchPlaces = async (input) => {
+  if (!input || input.length < 3) return [];
+  const res = await fetch('https://places.googleapis.com/v1/places:autocomplete', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
+    },
+    body: JSON.stringify({
+      input,
+      includedRegionCodes: ['za'],
+    }),
+  });
+  const data = await res.json();
+  return (data.suggestions || [])
+    .filter((s) => s.placePrediction)
+    .map((s) => ({
+      placeId: s.placePrediction.placeId,
+      text: s.placePrediction.text.text,
+      mainText: s.placePrediction.structuredFormat?.mainText?.text || '',
+      secondaryText: s.placePrediction.structuredFormat?.secondaryText?.text || '',
+    }));
+};
+
+const getPlaceDetails = async (placeId) => {
+  const res = await fetch(`https://places.googleapis.com/v1/places/${placeId}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY,
+      'X-Goog-FieldMask': 'addressComponents',
+    },
+  });
+  return res.json();
+};
 
 const PROPERTY_TYPES = [
   { value: 'office', label: 'Office' },
@@ -50,14 +88,81 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
   const updateMutation = useUpdateProperty();
   const { data: tenants } = useTenants();
 
+  const [addressQuery, setAddressQuery] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [loadingAddress, setLoadingAddress] = useState(false);
+  const debounceRef = useRef(null);
+  const dropdownRef = useRef(null);
+
   const tenantList = tenants || [];
   const isEditing = !!property;
   const isSaving = createMutation.isPending || updateMutation.isPending;
+
+  // Debounced address search
+  useEffect(() => {
+    if (!addressQuery || addressQuery.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      const results = await searchPlaces(addressQuery);
+      setSuggestions(results);
+      setShowSuggestions(results.length > 0);
+    }, 300);
+    return () => clearTimeout(debounceRef.current);
+  }, [addressQuery]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // Select a place and auto-fill address fields
+  const handleSelectPlace = async (place) => {
+    setShowSuggestions(false);
+    setAddressQuery(place.text);
+    setLoadingAddress(true);
+    try {
+      const details = await getPlaceDetails(place.placeId);
+      if (details.addressComponents) {
+        const get = (type) => {
+          const c = details.addressComponents.find((comp) => comp.types.includes(type));
+          return c ? c.longText : '';
+        };
+        const streetNumber = get('street_number');
+        const route = get('route');
+        const street = [streetNumber, route].filter(Boolean).join(' ');
+
+        setForm((prev) => ({
+          ...prev,
+          streetAddress: street,
+          suburb: get('sublocality_level_1') || get('sublocality') || get('neighborhood'),
+          city: get('locality') || get('administrative_area_level_2'),
+          province: get('administrative_area_level_1'),
+          postalCode: get('postal_code'),
+        }));
+      }
+    } catch {
+      // Silently fail — user can still fill in manually
+    }
+    setLoadingAddress(false);
+  };
 
   useEffect(() => {
     if (isOpen) {
       setErrors({});
       setSuccessMsg('');
+      setAddressQuery('');
+      setSuggestions([]);
+      setShowSuggestions(false);
       createMutation.reset();
       updateMutation.reset();
 
@@ -280,6 +385,41 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
             <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
               Physical Address
             </label>
+            <div className="relative" ref={dropdownRef}>
+              <MapPin className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2 z-10" />
+              {loadingAddress && (
+                <Loader2 className="w-4 h-4 text-accent animate-spin absolute right-3 top-1/2 -translate-y-1/2" />
+              )}
+              <input
+                type="text"
+                value={addressQuery}
+                onChange={(e) => {
+                  setAddressQuery(e.target.value);
+                  if (!e.target.value) setShowSuggestions(false);
+                }}
+                onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+                placeholder="Search for an address..."
+                className="w-full border border-border rounded-xl pl-9 pr-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent"
+              />
+              {showSuggestions && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-xl shadow-dropdown z-[100] max-h-60 overflow-y-auto">
+                  {suggestions.map((s) => (
+                    <button
+                      key={s.placeId}
+                      type="button"
+                      onClick={() => handleSelectPlace(s)}
+                      className="w-full text-left px-4 py-3 hover:bg-bg transition-colors flex items-start gap-3 border-b border-border last:border-b-0"
+                    >
+                      <Search className="w-4 h-4 text-text-secondary shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-bold text-text">{s.mainText}</p>
+                        <p className="text-xs text-text-secondary">{s.secondaryText}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <input
               type="text"
               value={form.streetAddress}

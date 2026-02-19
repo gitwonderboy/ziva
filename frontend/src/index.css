@@ -108,3 +108,8 @@ body {
   50% { opacity: 0.8; box-shadow: 0 0 0 6px rgba(46, 204, 113, 0); }
 }
 .animate-pulse-emerald { animation: pulse-emerald 2s ease-in-out infinite; }
+
+/* Google Places Autocomplete dropdown — must sit above modals (z-50) */
+.pac-container {
+  z-index: 9999 !important;
+}
