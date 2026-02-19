@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Search,
   Loader2,
@@ -42,10 +42,20 @@ const PropertyBadge = ({ propertyName }) => {
 
 const TenantsScreen = ({ user }) => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchInput, setSearchInput] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTenant, setEditingTenant] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  // Auto-open modal when navigated with openModal param
+  useEffect(() => {
+    if (searchParams.get('openModal') === 'true') {
+      setEditingTenant(null);
+      setModalOpen(true);
+      setSearchParams({ tab: 'tenants' }, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const { data: tenants, isLoading, isError } = useTenants();
   const { data: properties } = useProperties();
@@ -66,11 +76,11 @@ const TenantsScreen = ({ user }) => {
     const q = searchInput.trim().toLowerCase();
     if (!q) return resultList;
     return resultList.filter((t) =>
-      [t.name, t.tradingName, t.contactEmail, t.registrationNumber]
+      [t.name, t.tradingName, t.contactEmail, t.registrationNumber, t.propertyId ? propertyMap.get(t.propertyId) : null]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q))
     );
-  }, [resultList, searchInput]);
+  }, [resultList, searchInput, propertyMap]);
 
   const stats = useMemo(() => {
     const total = resultList.length;
@@ -109,24 +119,6 @@ const TenantsScreen = ({ user }) => {
           <Users className="w-5 h-5 text-accent" />
           <h1 className="font-bold text-text text-lg">Tenants</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative max-w-sm w-full">
-            <Search className="w-4 h-4 text-text-secondary absolute left-4 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search tenants by name..."
-              className="w-full bg-bg border-border border rounded-xl py-2 pl-12 pr-4 text-sm font-bold outline-none focus:border-accent transition-colors"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-            />
-          </div>
-          <button
-            onClick={openCreate}
-            className="bg-accent text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap"
-          >
-            <Plus className="w-4 h-4" /> Add
-          </button>
-        </div>
       </header>
 
       {/* MOBILE HEADER + SEARCH */}
@@ -154,7 +146,7 @@ const TenantsScreen = ({ user }) => {
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-8">
+      <div className="flex-1 overflow-hidden flex flex-col p-4 md:p-8">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Loader2 className="w-10 h-10 text-accent animate-spin" />
@@ -169,41 +161,59 @@ const TenantsScreen = ({ user }) => {
             <p className="text-xs text-text-secondary mt-1">Please try again</p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {/* KPI CARDS */}
-            <div className="grid grid-cols-3 lg:grid-cols-3 gap-4 max-w-2xl">
-              <KPICard
-                label="Total Tenants"
-                value={stats.total}
-                icon={<Users className="w-5 h-5 text-navy" />}
-              />
-              <KPICard
-                label="Assigned"
-                value={stats.assigned}
-                icon={<Users className="w-5 h-5 text-success" />}
-                color="bg-success-light"
-              />
-              <KPICard
-                label="Unassigned"
-                value={stats.unassigned}
-                icon={<Users className="w-5 h-5 text-warning" />}
-                color="bg-warning-light"
-              />
+          <div className="flex flex-col flex-1 gap-6 overflow-hidden min-h-0">
+            {/* KPI CARDS + ADD BUTTON */}
+            <div className="flex items-end justify-between gap-4 shrink-0">
+              <div className="grid grid-cols-3 gap-4 max-w-2xl flex-1">
+                <KPICard
+                  label="Total Tenants"
+                  value={stats.total}
+                  icon={<Users className="w-5 h-5 text-navy" />}
+                />
+                <KPICard
+                  label="Assigned"
+                  value={stats.assigned}
+                  icon={<Users className="w-5 h-5 text-success" />}
+                  color="bg-success-light"
+                />
+                <KPICard
+                  label="Unassigned"
+                  value={stats.unassigned}
+                  icon={<Users className="w-5 h-5 text-warning" />}
+                  color="bg-warning-light"
+                />
+              </div>
+              <button
+                onClick={openCreate}
+                className="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-bold hidden lg:flex items-center gap-1.5 hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap mb-1"
+              >
+                <Plus className="w-4 h-4" /> Add Tenant
+              </button>
             </div>
 
             {/* TABLE */}
-            <div className="bg-white rounded-3xl border border-border shadow-card overflow-hidden">
-              <div className="px-4 md:px-8 py-5 border-b border-border bg-bg/30">
-                <span className="text-sm font-bold text-text-secondary">
+            <div className="bg-white rounded-3xl border border-border shadow-card overflow-hidden flex flex-col">
+              <div className="px-4 md:px-8 py-4 border-b border-border bg-bg/30 shrink-0 flex items-center justify-between gap-4">
+                <span className="text-sm font-bold text-text-secondary whitespace-nowrap">
                   {filtered.length} {filtered.length === 1 ? 'Tenant' : 'Tenants'}
                   {searchInput.trim() && filtered.length !== resultList.length && (
                     <span className="text-text-secondary font-medium"> of {resultList.length}</span>
                   )}
                 </span>
+                <div className="relative max-w-xs w-full hidden lg:block">
+                  <Search className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Search tenants..."
+                    className="w-full bg-white border-border border rounded-xl py-1.5 pl-9 pr-4 text-sm outline-none focus:border-accent transition-colors"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                  />
+                </div>
               </div>
-              <div className="overflow-x-auto">
+              <div className="overflow-y-auto max-h-[594px]">
                 <table className="w-full text-left">
-                  <thead>
+                  <thead className="sticky top-0 z-10 bg-white">
                     <tr className="border-b border-border">
                       <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
                         Tenant Name
@@ -220,7 +230,7 @@ const TenantsScreen = ({ user }) => {
                     {filtered.map((tenant) => (
                       <tr
                         key={tenant.id}
-                        className="hover:bg-bg transition-colors cursor-pointer"
+                        className="h-[66px] hover:bg-bg transition-colors cursor-pointer"
                         onClick={() => navigate(`/tenants/${tenant.id}`)}
                       >
                         <td className="px-4 md:px-8 py-4 md:py-5">

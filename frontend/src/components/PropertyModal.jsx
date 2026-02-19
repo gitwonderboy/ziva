@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { X, Loader2 } from 'lucide-react';
-import { useCreateProperty, useUpdateProperty } from '../firebase';
+import { useCreateProperty, useUpdateProperty, useTenants } from '../firebase';
 
 const PROPERTY_TYPES = [
   { value: 'office', label: 'Office' },
@@ -23,7 +24,7 @@ const SA_PROVINCES = [
 
 const EMPTY_FORM = {
   bpNumber: '',
-  name: '',
+  tenantNames: [],
   company: '',
   description: '',
   streetAddress: '',
@@ -37,7 +38,6 @@ const EMPTY_FORM = {
 
 const REQUIRED_FIELDS = [
   { key: 'bpNumber', label: 'Property ID' },
-  { key: 'name', label: 'Tenant Name' },
 ];
 
 const PropertyModal = ({ isOpen, onClose, property }) => {
@@ -45,9 +45,12 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
   const [errors, setErrors] = useState({});
   const [successMsg, setSuccessMsg] = useState('');
 
+  const [, setSearchParams] = useSearchParams();
   const createMutation = useCreateProperty();
   const updateMutation = useUpdateProperty();
+  const { data: tenants } = useTenants();
 
+  const tenantList = tenants || [];
   const isEditing = !!property;
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
@@ -59,9 +62,10 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
       updateMutation.reset();
 
       if (property) {
+        const names = property.tenantNames || (property.name ? [property.name] : []);
         setForm({
           bpNumber: property.bpNumber || '',
-          name: property.name || '',
+          tenantNames: names,
           company: property.company || '',
           description: property.description || '',
           streetAddress: property.streetAddress || '',
@@ -98,6 +102,9 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
         newErrors[key] = `${label} is required`;
       }
     }
+    if (form.tenantNames.length === 0) {
+      newErrors.tenantNames = 'At least one tenant is required';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -107,7 +114,8 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
 
     const payload = {
       bpNumber: form.bpNumber.trim(),
-      name: form.name.trim(),
+      name: form.tenantNames.join(', '),
+      tenantNames: form.tenantNames,
       company: form.company.trim(),
       description: form.description.trim(),
       streetAddress: form.streetAddress.trim(),
@@ -139,9 +147,9 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-navy/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
+      <div className="relative w-full max-w-lg bg-white max-h-[90vh] shadow-2xl flex flex-col rounded-2xl mx-4 animate-fade-in-scale">
         {/* Header */}
         <div className="p-6 border-b border-border flex items-center justify-between shrink-0">
           <h2 className="font-bold text-text text-lg">
@@ -186,21 +194,57 @@ const PropertyModal = ({ isOpen, onClose, property }) => {
             )}
           </div>
 
-          {/* Tenant Name */}
+          {/* Tenant Names */}
           <div>
             <label className="block text-[10px] font-semibold text-text-secondary uppercase tracking-widest mb-1.5">
-              Tenant Name <span className="text-error">*</span>
+              Tenants <span className="text-error">*</span>
             </label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => handleChange('name', e.target.value)}
-              className={`w-full border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text focus:border-accent ${
-                errors.name ? 'border-error' : 'border-border'
+            {form.tenantNames.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {form.tenantNames.map((name) => (
+                  <span
+                    key={name}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-accent-light text-accent text-xs font-bold"
+                  >
+                    {name}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = form.tenantNames.filter((n) => n !== name);
+                        handleChange('tenantNames', updated);
+                      }}
+                      className="hover:text-error transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <select
+              value=""
+              onChange={(e) => {
+                if (e.target.value === '__add_new__') {
+                  onClose();
+                  setSearchParams({ tab: 'tenants', openModal: 'true' }, { replace: true });
+                } else if (e.target.value && !form.tenantNames.includes(e.target.value)) {
+                  handleChange('tenantNames', [...form.tenantNames, e.target.value]);
+                }
+              }}
+              className={`w-full border rounded-xl px-3 py-2.5 text-sm font-bold outline-none transition-colors bg-white text-text-secondary focus:border-accent ${
+                errors.tenantNames ? 'border-error' : 'border-border'
               }`}
-            />
-            {errors.name && (
-              <p className="text-[11px] font-bold text-error mt-1">{errors.name}</p>
+            >
+              <option value="">Add a tenant...</option>
+              {tenantList
+                .filter((t) => !form.tenantNames.includes(t.name))
+                .map((t) => (
+                  <option key={t.id} value={t.name}>{t.name}</option>
+                ))}
+              <option value="__add_new__">+ Add new tenant</option>
+            </select>
+            {errors.tenantNames && (
+              <p className="text-[11px] font-bold text-error mt-1">{errors.tenantNames}</p>
             )}
           </div>
 

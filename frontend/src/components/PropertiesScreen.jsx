@@ -68,11 +68,11 @@ const PropertiesScreen = ({ user }) => {
     const q = searchInput.trim().toLowerCase();
     if (!q) return resultList;
     return resultList.filter((p) =>
-      [p.bpNumber, p.name, p.company, p.physicalAddress]
+      [p.bpNumber, p.name, p.company, p.physicalAddress, propertyTenantMap.get(p.id), ...(p.tenantNames || [])]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q))
     );
-  }, [resultList, searchInput]);
+  }, [resultList, searchInput, propertyTenantMap]);
 
   const stats = useMemo(() => {
     const total = resultList.length;
@@ -111,24 +111,6 @@ const PropertiesScreen = ({ user }) => {
           <Building2 className="w-5 h-5 text-accent" />
           <h1 className="font-bold text-text text-lg">Properties</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative max-w-sm w-full">
-            <Search className="w-4 h-4 text-text-secondary absolute left-4 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search by Property ID or tenant name..."
-              className="w-full bg-bg border-border border rounded-xl py-2 pl-12 pr-4 text-sm font-bold outline-none focus:border-accent transition-colors"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-            />
-          </div>
-          <button
-            onClick={openCreate}
-            className="bg-accent text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-1.5 hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap"
-          >
-            <Plus className="w-4 h-4" /> Add
-          </button>
-        </div>
       </header>
 
       {/* MOBILE HEADER + SEARCH */}
@@ -156,7 +138,7 @@ const PropertiesScreen = ({ user }) => {
       </div>
 
       {/* MAIN CONTENT */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-8">
+      <div className="flex-1 overflow-hidden flex flex-col p-4 md:p-8">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-24 gap-4">
             <Loader2 className="w-10 h-10 text-accent animate-spin" />
@@ -171,41 +153,59 @@ const PropertiesScreen = ({ user }) => {
             <p className="text-xs text-text-secondary mt-1">Please try again</p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {/* KPI CARDS */}
-            <div className="grid grid-cols-3 lg:grid-cols-3 gap-4 max-w-2xl">
-              <KPICard
-                label="Total Properties"
-                value={stats.total}
-                icon={<Building2 className="w-5 h-5 text-navy" />}
-              />
-              <KPICard
-                label="Occupied"
-                value={stats.occupied}
-                icon={<Building2 className="w-5 h-5 text-success" />}
-                color="bg-success-light"
-              />
-              <KPICard
-                label="Vacant"
-                value={stats.vacant}
-                icon={<Building2 className="w-5 h-5 text-warning" />}
-                color="bg-warning-light"
-              />
+          <div className="flex flex-col flex-1 gap-6 overflow-hidden min-h-0">
+            {/* KPI CARDS + ADD BUTTON */}
+            <div className="flex items-end justify-between gap-4 shrink-0">
+              <div className="grid grid-cols-3 gap-4 max-w-2xl flex-1">
+                <KPICard
+                  label="Total Properties"
+                  value={stats.total}
+                  icon={<Building2 className="w-5 h-5 text-navy" />}
+                />
+                <KPICard
+                  label="Occupied"
+                  value={stats.occupied}
+                  icon={<Building2 className="w-5 h-5 text-success" />}
+                  color="bg-success-light"
+                />
+                <KPICard
+                  label="Vacant"
+                  value={stats.vacant}
+                  icon={<Building2 className="w-5 h-5 text-warning" />}
+                  color="bg-warning-light"
+                />
+              </div>
+              <button
+                onClick={openCreate}
+                className="bg-accent text-white px-5 py-2.5 rounded-xl text-sm font-bold hidden lg:flex items-center gap-1.5 hover:bg-accent-hover transition-colors shrink-0 whitespace-nowrap mb-1"
+              >
+                <Plus className="w-4 h-4" /> Add Property
+              </button>
             </div>
 
             {/* TABLE */}
-            <div className="bg-white rounded-3xl border border-border shadow-card overflow-hidden">
-              <div className="px-4 md:px-8 py-5 border-b border-border bg-bg/30">
-                <span className="text-sm font-bold text-text-secondary">
+            <div className="bg-white rounded-3xl border border-border shadow-card overflow-hidden flex flex-col">
+              <div className="px-4 md:px-8 py-4 border-b border-border bg-bg/30 shrink-0 flex items-center justify-between gap-4">
+                <span className="text-sm font-bold text-text-secondary whitespace-nowrap">
                   {filtered.length} {filtered.length === 1 ? 'Property' : 'Properties'}
                   {searchInput.trim() && filtered.length !== resultList.length && (
                     <span className="text-text-secondary font-medium"> of {resultList.length}</span>
                   )}
                 </span>
+                <div className="relative max-w-xs w-full hidden lg:block">
+                  <Search className="w-4 h-4 text-text-secondary absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Search properties..."
+                    className="w-full bg-white border-border border rounded-xl py-1.5 pl-9 pr-4 text-sm outline-none focus:border-accent transition-colors"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                  />
+                </div>
               </div>
-              <div className="overflow-x-auto">
+              <div className="overflow-y-auto max-h-[594px]">
                 <table className="w-full text-left">
-                  <thead>
+                  <thead className="sticky top-0 z-10 bg-white">
                     <tr className="border-b border-border">
                       <th className="px-4 md:px-8 py-3 text-[10px] font-semibold text-text-secondary uppercase tracking-widest">
                         Property ID
@@ -228,7 +228,7 @@ const PropertiesScreen = ({ user }) => {
                     {filtered.map((property) => (
                       <tr
                         key={property.id}
-                        className="hover:bg-bg transition-colors cursor-pointer"
+                        className="h-[66px] hover:bg-bg transition-colors cursor-pointer"
                         onClick={() => navigate(`/properties/${property.id}`)}
                       >
                         <td className="px-4 md:px-8 py-4 md:py-5">
@@ -239,8 +239,18 @@ const PropertiesScreen = ({ user }) => {
                             </span>
                           </div>
                         </td>
-                        <td className="px-4 md:px-8 py-4 md:py-5 text-sm font-bold text-text">
-                          {property.name || '\u2014'}
+                        <td className="px-4 md:px-8 py-4 md:py-5">
+                          {property.tenantNames?.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                              {property.tenantNames.map((n) => (
+                                <span key={n} className="inline-flex px-2 py-0.5 rounded-md text-xs font-bold bg-accent-light text-accent">
+                                  {n}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-sm font-bold text-text">{property.name || '\u2014'}</span>
+                          )}
                         </td>
                         <td className="px-4 md:px-8 py-4 md:py-5 text-sm font-bold text-text-secondary hidden sm:table-cell">
                           {property.company || '\u2014'}

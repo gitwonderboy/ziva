@@ -260,7 +260,7 @@ const DashboardScreen = ({ user, onLogout, onReset }) => {
           <div className="w-9 h-9 bg-accent rounded-xl flex items-center justify-center">
             <ArrowDownUp className="text-white w-5 h-5" />
           </div>
-          <span className="text-white font-bold text-xl tracking-tight">Ziva</span>
+          <span className="text-white font-bold text-xl tracking-tight">ZIVA PLATFORM</span>
         </div>
 
         <nav className="flex-1 px-4 space-y-1 mt-4">
@@ -368,7 +368,7 @@ const DashboardScreen = ({ user, onLogout, onReset }) => {
                 <div className="w-9 h-9 bg-accent rounded-xl flex items-center justify-center">
                   <ArrowDownUp className="text-white w-5 h-5" />
                 </div>
-                <span className="text-white font-bold text-xl tracking-tight">Ziva</span>
+                <span className="text-white font-bold text-xl tracking-tight">ZIVA PLATFORM</span>
               </div>
               <button
                 onClick={() => setMobileMenuOpen(false)}
@@ -479,7 +479,7 @@ const DashboardScreen = ({ user, onLogout, onReset }) => {
               <div className="w-7 h-7 bg-accent rounded-lg flex items-center justify-center">
                 <ArrowDownUp className="text-white w-4 h-4" />
               </div>
-              <span className="text-white font-bold text-sm tracking-tight">Ziva</span>
+              <span className="text-white font-bold text-sm tracking-tight">ZIVA PLATFORM</span>
             </div>
           </div>
           <button

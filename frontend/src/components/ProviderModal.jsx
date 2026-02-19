@@ -109,9 +109,9 @@ const ProviderModal = ({ isOpen, onClose, provider }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-navy/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-lg bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
+      <div className="relative w-full max-w-lg bg-white max-h-[90vh] shadow-2xl flex flex-col rounded-2xl mx-4 animate-fade-in-scale">
         {/* Header */}
         <div className="p-6 border-b border-border flex items-center justify-between shrink-0">
           <h2 className="font-bold text-text text-lg">

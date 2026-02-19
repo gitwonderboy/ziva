@@ -33,7 +33,7 @@ const AuthScreen = ({ onLogin }) => {
         <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
           <ShieldCheck className="text-white w-4 h-4" />
         </div>
-        <span className="text-lg font-bold tracking-tight text-white">Ziva</span>
+        <span className="text-lg font-bold tracking-tight text-white">ZIVA PLATFORM</span>
       </div>
 
       {/* LEFT PANEL: Branding & Marketing */}
@@ -46,7 +46,7 @@ const AuthScreen = ({ onLogin }) => {
             <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center shadow-lg border border-white/20">
               <ShieldCheck className="text-white w-6 h-6" />
             </div>
-            <span className="text-2xl font-bold tracking-tight text-white">Ziva</span>
+            <span className="text-2xl font-bold tracking-tight text-white">ZIVA PLATFORM</span>
           </div>
 
           <h1 className="text-4xl font-bold mb-6 leading-tight">
@@ -143,7 +143,7 @@ const AuthScreen = ({ onLogin }) => {
           </form>
 
           <p className="mt-10 text-center text-sm font-medium text-text-secondary">
-            New to Ziva? <button className="text-accent hover:underline">Start free trial</button>
+            New to ZIVA PLATFORM? <button className="text-accent hover:underline">Start free trial</button>
           </p>
         </div>
       </div>
